@@ -1,8 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, LogOut } from 'lucide-react';
+import { Menu, X, LogOut, User, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Navbar = () => {
@@ -11,6 +11,8 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,14 +40,28 @@ const Navbar = () => {
     
     checkLoginStatus();
     
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
   const handleLogout = () => {
     localStorage.removeItem('skillswap_user');
     setIsLoggedIn(false);
+    setIsDropdownOpen(false);
     toast.success('Logged out successfully');
     navigate('/');
   };
@@ -81,19 +97,52 @@ const Navbar = () => {
             </Link>
           </nav>
           
-          {/* Auth Buttons */}
+          {/* Auth Buttons or Profile Icon */}
           <div className="hidden md:flex items-center space-x-4">
             {isLoggedIn ? (
-              <>
-                <span className="text-sm">Hello, {userName}</span>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/dashboard">Dashboard</Link>
+              <div className="relative" ref={dropdownRef}>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={toggleDropdown}
+                  className="rounded-full h-10 w-10 flex items-center justify-center"
+                  aria-label="Open profile menu"
+                >
+                  <User size={20} />
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleLogout} className="flex items-center gap-1">
-                  <LogOut size={16} />
-                  <span>Logout</span>
-                </Button>
-              </>
+                
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-background border rounded-md shadow-lg z-50 py-1 animate-fade-in">
+                    <div className="px-4 py-2 border-b">
+                      <p className="font-medium text-sm">{userName}</p>
+                    </div>
+                    <Link 
+                      to="/dashboard" 
+                      className="block px-4 py-2 text-sm hover:bg-accent transition-colors"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        navigate('/profile');
+                      }} 
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-accent transition-colors flex items-center"
+                    >
+                      <Settings size={16} className="mr-2" />
+                      Edit Profile
+                    </button>
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-accent transition-colors flex items-center"
+                    >
+                      <LogOut size={16} className="mr-2" />
+                      Log Out
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <Button variant="outline" size="sm" asChild>
@@ -153,16 +202,32 @@ const Navbar = () => {
               <div className="flex flex-col space-y-2 pt-2 border-t">
                 {isLoggedIn ? (
                   <>
-                    <Button variant="ghost" asChild>
+                    <Button variant="ghost" asChild className="justify-start">
                       <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
                         Dashboard
                       </Link>
                     </Button>
-                    <Button variant="outline" onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}>
-                      Logout
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start" 
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigate('/profile');
+                      }}
+                    >
+                      <Settings size={16} className="mr-2" />
+                      Edit Profile
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="justify-start text-destructive" 
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <LogOut size={16} className="mr-2" />
+                      Log Out
                     </Button>
                   </>
                 ) : (
