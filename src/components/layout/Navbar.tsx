@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,7 +20,6 @@ const Navbar = () => {
     
     window.addEventListener('scroll', handleScroll);
     
-    // Check if user is logged in
     const checkLoginStatus = () => {
       const userInfo = localStorage.getItem('skillswap_user');
       if (userInfo) {
@@ -40,7 +38,6 @@ const Navbar = () => {
     
     checkLoginStatus();
     
-    // Close dropdown when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
@@ -81,7 +78,6 @@ const Navbar = () => {
             </Link>
           </div>
           
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
               Home
@@ -97,7 +93,6 @@ const Navbar = () => {
             </Link>
           </nav>
           
-          {/* Auth Buttons or Profile Icon */}
           <div className="hidden md:flex items-center space-x-4">
             {isLoggedIn ? (
               <div className="relative" ref={dropdownRef}>
@@ -123,16 +118,14 @@ const Navbar = () => {
                     >
                       Dashboard
                     </Link>
-                    <button 
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        navigate('/profile');
-                      }} 
+                    <Link 
+                      to="/profile" 
                       className="w-full text-left px-4 py-2 text-sm hover:bg-accent transition-colors flex items-center"
+                      onClick={() => setIsDropdownOpen(false)}
                     >
                       <Settings size={16} className="mr-2" />
-                      Edit Profile
-                    </button>
+                      Your Profile
+                    </Link>
                     <button 
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-accent transition-colors flex items-center"
@@ -155,7 +148,6 @@ const Navbar = () => {
             )}
           </div>
           
-          {/* Mobile Menu Button */}
           <button 
             onClick={toggleMenu}
             className="md:hidden flex items-center"
@@ -166,7 +158,6 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden animate-fade-in">
           <div className="bg-background/95 backdrop-blur-md shadow-md">
@@ -216,7 +207,7 @@ const Navbar = () => {
                       }}
                     >
                       <Settings size={16} className="mr-2" />
-                      Edit Profile
+                      Your Profile
                     </Button>
                     <Button 
                       variant="outline" 
