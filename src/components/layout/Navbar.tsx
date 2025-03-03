@@ -1,8 +1,10 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, LogOut, User, Settings } from 'lucide-react';
+import { Menu, X, LogOut, Settings } from 'lucide-react';
 import { toast } from 'sonner';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -10,6 +12,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +30,7 @@ const Navbar = () => {
           const userData = JSON.parse(userInfo);
           setIsLoggedIn(true);
           setUserName(userData.name || 'User');
+          setProfilePicture(userData.profilePicture || null);
         } catch (e) {
           console.error('Error parsing user info:', e);
           setIsLoggedIn(false);
@@ -51,6 +55,15 @@ const Navbar = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
@@ -100,10 +113,16 @@ const Navbar = () => {
                   variant="ghost" 
                   size="icon" 
                   onClick={toggleDropdown}
-                  className="rounded-full h-10 w-10 flex items-center justify-center"
+                  className="rounded-full h-10 w-10 flex items-center justify-center p-0 overflow-hidden"
                   aria-label="Open profile menu"
                 >
-                  <User size={20} />
+                  <Avatar className="h-10 w-10">
+                    {profilePicture ? (
+                      <AvatarImage src={profilePicture} alt={userName} />
+                    ) : (
+                      <AvatarFallback>{getInitials(userName)}</AvatarFallback>
+                    )}
+                  </Avatar>
                 </Button>
                 
                 {isDropdownOpen && (
@@ -193,6 +212,16 @@ const Navbar = () => {
               <div className="flex flex-col space-y-2 pt-2 border-t">
                 {isLoggedIn ? (
                   <>
+                    <div className="flex items-center space-x-3 py-2 px-1">
+                      <Avatar className="h-8 w-8">
+                        {profilePicture ? (
+                          <AvatarImage src={profilePicture} alt={userName} />
+                        ) : (
+                          <AvatarFallback>{getInitials(userName)}</AvatarFallback>
+                        )}
+                      </Avatar>
+                      <span className="font-medium">{userName}</span>
+                    </div>
                     <Button variant="ghost" asChild className="justify-start">
                       <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
                         Dashboard

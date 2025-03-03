@@ -1,16 +1,20 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Camera, Upload } from 'lucide-react';
 
 const Profile = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,7 +22,8 @@ const Profile = () => {
     newPassword: '',
     confirmPassword: '',
     teachSkills: '',
-    learnSkills: ''
+    learnSkills: '',
+    profilePicture: ''
   });
 
   useEffect(() => {
@@ -40,8 +45,14 @@ const Profile = () => {
         name: userData.name || '',
         email: userData.email || '',
         teachSkills: (userData.teachSkills || []).join(', '),
-        learnSkills: (userData.learnSkills || []).join(', ')
+        learnSkills: (userData.learnSkills || []).join(', '),
+        profilePicture: userData.profilePicture || ''
       }));
+
+      // Set the preview image if the user has a profile picture
+      if (userData.profilePicture) {
+        setPreviewImage(userData.profilePicture);
+      }
     } catch (e) {
       console.error('Error parsing user info:', e);
       toast.error('Error loading user data');
@@ -55,6 +66,40 @@ const Profile = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleImageClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      setPreviewImage(result);
+      setFormData(prev => ({
+        ...prev,
+        profilePicture: result
+      }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
@@ -99,7 +144,8 @@ const Profile = () => {
             name: formData.name,
             email: formData.email,
             teachSkills: formData.teachSkills.split(',').map((skill: string) => skill.trim()).filter(Boolean),
-            learnSkills: formData.learnSkills.split(',').map((skill: string) => skill.trim()).filter(Boolean)
+            learnSkills: formData.learnSkills.split(',').map((skill: string) => skill.trim()).filter(Boolean),
+            profilePicture: formData.profilePicture
           };
           
           // Update password if a new one was provided
@@ -120,7 +166,8 @@ const Profile = () => {
         name: formData.name,
         email: formData.email,
         teachSkills: formData.teachSkills.split(',').map((skill: string) => skill.trim()).filter(Boolean),
-        learnSkills: formData.learnSkills.split(',').map((skill: string) => skill.trim()).filter(Boolean)
+        learnSkills: formData.learnSkills.split(',').map((skill: string) => skill.trim()).filter(Boolean),
+        profilePicture: formData.profilePicture
       };
       
       localStorage.setItem('skillswap_user', JSON.stringify(updatedUser));
@@ -143,6 +190,15 @@ const Profile = () => {
     }
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
   if (!user) {
     return <div className="container mx-auto px-4 py-24 flex justify-center">Loading...</div>;
   }
@@ -157,8 +213,49 @@ const Profile = () => {
             <CardTitle>Personal Information</CardTitle>
             <CardDescription>Update your personal information and how we can reach you</CardDescription>
           </CardHeader>
+
           <form onSubmit={handleProfileUpdate}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              <div className="flex flex-col items-center mb-6">
+                <div 
+                  className="relative cursor-pointer group" 
+                  onClick={handleImageClick}
+                >
+                  <Avatar className="h-24 w-24 border-2 border-primary/20">
+                    {previewImage ? (
+                      <AvatarImage src={previewImage} alt={user.name} />
+                    ) : (
+                      <AvatarFallback className="text-xl">
+                        {getInitials(user.name || 'User')}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="absolute inset-0 bg-black/30 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                    <Camera className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+                <Input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={handleImageClick}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Change Photo
+                </Button>
+                <p className="text-xs text-muted-foreground mt-1">
+                  JPG, PNG or GIF (max. 5MB)
+                </p>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <Input
