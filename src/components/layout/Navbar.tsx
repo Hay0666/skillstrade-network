@@ -1,12 +1,16 @@
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,10 +18,37 @@ const Navbar = () => {
     };
     
     window.addEventListener('scroll', handleScroll);
+    
+    // Check if user is logged in
+    const checkLoginStatus = () => {
+      const userInfo = localStorage.getItem('skillswap_user');
+      if (userInfo) {
+        try {
+          const userData = JSON.parse(userInfo);
+          setIsLoggedIn(true);
+          setUserName(userData.name || 'User');
+        } catch (e) {
+          console.error('Error parsing user info:', e);
+          setIsLoggedIn(false);
+        }
+      } else {
+        setIsLoggedIn(false);
+      }
+    };
+    
+    checkLoginStatus();
+    
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const handleLogout = () => {
+    localStorage.removeItem('skillswap_user');
+    setIsLoggedIn(false);
+    toast.success('Logged out successfully');
+    navigate('/');
+  };
 
   return (
     <header 
@@ -52,12 +83,27 @@ const Navbar = () => {
           
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/auth?mode=login">Sign In</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link to="/auth?mode=register">Join Now</Link>
-            </Button>
+            {isLoggedIn ? (
+              <>
+                <span className="text-sm">Hello, {userName}</span>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/dashboard">Dashboard</Link>
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleLogout} className="flex items-center gap-1">
+                  <LogOut size={16} />
+                  <span>Logout</span>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/auth?mode=login">Sign In</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/auth?mode=register">Join Now</Link>
+                </Button>
+              </>
+            )}
           </div>
           
           {/* Mobile Menu Button */}
@@ -105,16 +151,34 @@ const Navbar = () => {
                 About
               </Link>
               <div className="flex flex-col space-y-2 pt-2 border-t">
-                <Button variant="outline" asChild>
-                  <Link to="/auth?mode=login" onClick={() => setIsMenuOpen(false)}>
-                    Sign In
-                  </Link>
-                </Button>
-                <Button asChild>
-                  <Link to="/auth?mode=register" onClick={() => setIsMenuOpen(false)}>
-                    Join Now
-                  </Link>
-                </Button>
+                {isLoggedIn ? (
+                  <>
+                    <Button variant="ghost" asChild>
+                      <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                        Dashboard
+                      </Link>
+                    </Button>
+                    <Button variant="outline" onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}>
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" asChild>
+                      <Link to="/auth?mode=login" onClick={() => setIsMenuOpen(false)}>
+                        Sign In
+                      </Link>
+                    </Button>
+                    <Button asChild>
+                      <Link to="/auth?mode=register" onClick={() => setIsMenuOpen(false)}>
+                        Join Now
+                      </Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

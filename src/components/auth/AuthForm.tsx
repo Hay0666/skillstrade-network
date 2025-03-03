@@ -21,6 +21,12 @@ const AuthForm = ({ mode }: AuthFormProps) => {
     confirmPassword: '',
     acceptTerms: false
   });
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+    name: '',
+    confirmPassword: ''
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -28,24 +34,142 @@ const AuthForm = ({ mode }: AuthFormProps) => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    
+    // Clear error when user edits a field
+    if (name in errors) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+  
+  const validateForm = (): boolean => {
+    const newErrors = {
+      email: '',
+      password: '',
+      name: '',
+      confirmPassword: ''
+    };
+    let isValid = true;
+    
+    // Email validation
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+      isValid = false;
+    }
+    
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+      isValid = false;
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+      isValid = false;
+    }
+    
+    // Additional validations for register mode
+    if (mode === 'register') {
+      if (!formData.name) {
+        newErrors.name = 'Name is required';
+        isValid = false;
+      }
+      
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+        isValid = false;
+      }
+      
+      if (!formData.acceptTerms) {
+        toast.error('You must accept the terms of service');
+        isValid = false;
+      }
+    }
+    
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      // This is just a placeholder for the authentication logic
-      // In a real application, you would call your authentication API here
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
       if (mode === 'register') {
+        // Check if user already exists in localStorage (simulating DB check)
+        const existingUsers = JSON.parse(localStorage.getItem('skillswap_users') || '[]');
+        const userExists = existingUsers.some((user: any) => user.email === formData.email);
+        
+        if (userExists) {
+          toast.error('A user with this email already exists');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Store new user
+        const newUser = {
+          id: Date.now().toString(),
+          name: formData.name,
+          email: formData.email,
+          password: formData.password, // In a real app, this would be hashed
+          teachSkills: [],
+          learnSkills: [],
+          createdAt: new Date().toISOString()
+        };
+        
+        existingUsers.push(newUser);
+        localStorage.setItem('skillswap_users', JSON.stringify(existingUsers));
+        
+        // Store current user session
+        const sessionUser = {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          teachSkills: newUser.teachSkills,
+          learnSkills: newUser.learnSkills
+        };
+        localStorage.setItem('skillswap_user', JSON.stringify(sessionUser));
+        
         toast.success('Account created successfully!');
+        navigate('/dashboard');
       } else {
+        // Login logic
+        const existingUsers = JSON.parse(localStorage.getItem('skillswap_users') || '[]');
+        const user = existingUsers.find((user: any) => user.email === formData.email);
+        
+        if (!user) {
+          toast.error('User not found. Please sign up first.');
+          setIsLoading(false);
+          return;
+        }
+        
+        if (user.password !== formData.password) {
+          toast.error('Incorrect password. Please try again.');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Store current user session
+        const sessionUser = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          teachSkills: user.teachSkills,
+          learnSkills: user.learnSkills
+        };
+        localStorage.setItem('skillswap_user', JSON.stringify(sessionUser));
+        
         toast.success('Signed in successfully!');
+        navigate('/dashboard');
       }
-      
-      navigate('/dashboard');
     } catch (error) {
       console.error('Authentication error:', error);
       toast.error(mode === 'login' 
@@ -71,6 +195,9 @@ const AuthForm = ({ mode }: AuthFormProps) => {
             required
             disabled={isLoading}
           />
+          {errors.name && (
+            <p className="text-sm text-destructive">{errors.name}</p>
+          )}
         </div>
       )}
       
@@ -86,6 +213,9 @@ const AuthForm = ({ mode }: AuthFormProps) => {
           required
           disabled={isLoading}
         />
+        {errors.email && (
+          <p className="text-sm text-destructive">{errors.email}</p>
+        )}
       </div>
       
       <div className="space-y-2">
@@ -107,6 +237,9 @@ const AuthForm = ({ mode }: AuthFormProps) => {
           required
           disabled={isLoading}
         />
+        {errors.password && (
+          <p className="text-sm text-destructive">{errors.password}</p>
+        )}
       </div>
       
       {mode === 'register' && (
@@ -123,6 +256,9 @@ const AuthForm = ({ mode }: AuthFormProps) => {
               required
               disabled={isLoading}
             />
+            {errors.confirmPassword && (
+              <p className="text-sm text-destructive">{errors.confirmPassword}</p>
+            )}
           </div>
           
           <div className="flex items-center space-x-2 pt-2">
@@ -134,7 +270,6 @@ const AuthForm = ({ mode }: AuthFormProps) => {
                 setFormData(prev => ({ ...prev, acceptTerms: checked as boolean }))
               }
               disabled={isLoading}
-              required
             />
             <label 
               htmlFor="acceptTerms" 
@@ -151,7 +286,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
           {isLoading ? (
             <span className="flex items-center justify-center">
               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
               {mode === 'login' ? 'Signing in...' : 'Creating account...'}
@@ -178,7 +313,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
             <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
             <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
             <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-            <path fill="currentColor" d="M1 1h22v22H1z" fill="none" />
+            <path fill="none" d="M1 1h22v22H1z" />
           </svg>
           Google
         </Button>
