@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { UserMatch } from '@/types/user';
 import { findSkillMatches } from '@/utils/matchingSystem';
+import { loadSampleProfiles } from '@/utils/loadSampleProfiles';
 
 const SkillMatches = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const SkillMatches = () => {
   const [matches, setMatches] = useState<UserMatch[]>([]);
   const [userData, setUserData] = useState<any>(null);
 
-  useEffect(() => {
+  const loadMatches = () => {
     // Check if user is logged in
     const storedUser = localStorage.getItem('skillswap_user');
     
@@ -40,7 +41,17 @@ const SkillMatches = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    loadMatches();
   }, [navigate]);
+
+  const handleLoadSampleProfiles = () => {
+    loadSampleProfiles();
+    toast.success('Sample profiles loaded successfully');
+    loadMatches();
+  };
 
   const getInitials = (name: string) => {
     return name
@@ -68,11 +79,18 @@ const SkillMatches = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 container mx-auto px-4 py-8 mt-20">
-        <div className="mb-8 mt-4">
-          <h1 className="text-3xl font-bold">Your Skill Matches</h1>
-          <p className="text-muted-foreground mt-2">
-            Connect with people who want to learn what you teach and can teach what you want to learn
-          </p>
+        <div className="mb-8 mt-4 flex flex-col md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Your Skill Matches</h1>
+            <p className="text-muted-foreground mt-2">
+              Connect with people who want to learn what you teach and can teach what you want to learn
+            </p>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <Button onClick={handleLoadSampleProfiles} variant="outline" className="mr-2">
+              Load Sample Profiles
+            </Button>
+          </div>
         </div>
 
         {matches.length > 0 ? (
@@ -133,7 +151,12 @@ const SkillMatches = () => {
               <p className="text-muted-foreground mb-6">
                 Try adding more skills to your profile to increase your chances of finding a match
               </p>
-              <Button onClick={() => navigate('/profile')}>Update Your Skills</Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button onClick={() => navigate('/profile')}>Update Your Skills</Button>
+                <Button onClick={handleLoadSampleProfiles} variant="outline">
+                  Load Sample Profiles
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
