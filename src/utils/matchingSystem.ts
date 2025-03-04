@@ -43,17 +43,18 @@ export function findSkillMatches(currentUser: User): UserMatch[] {
       const matchingSkillsCount = canTeachYou.length + youCanTeach.length;
       const matchScore = Math.round((matchingSkillsCount / totalPossibleSkills) * 100);
       
+      // Fix: Create a UserMatch object with correct optional profilePicture
       return {
         id: user.id,
         name: user.name,
         email: user.email,
-        profilePicture: user.profilePicture,
+        profilePicture: user.profilePicture, // This is now correctly optional
         matchScore,
         canTeachYou,
         youCanTeach
-      };
+      } as UserMatch; // Explicitly cast to UserMatch to ensure type compatibility
     })
-    .filter((match): match is UserMatch => match !== null)
+    .filter((match): match is NonNullable<typeof match> => match !== null) // Fix: Use a more generic type predicate
     .sort((a, b) => b.matchScore - a.matchScore); // Sort by match score descending
   
   return matches;
