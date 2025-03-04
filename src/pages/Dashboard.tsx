@@ -51,7 +51,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-4 py-8 mt-16">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Welcome back, {userData?.name || 'User'}</h1>
           <p className="text-muted-foreground mt-2">
