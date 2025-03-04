@@ -6,6 +6,9 @@ import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserMatch } from '@/types/user';
+import { findSkillMatches } from '@/utils/matchingSystem';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -15,7 +18,9 @@ const Dashboard = () => {
     email: string;
     teachSkills: string[];
     learnSkills: string[];
+    profilePicture?: string;
   } | null>(null);
+  const [topMatches, setTopMatches] = useState<UserMatch[]>([]);
 
   useEffect(() => {
     // Check if user is logged in by looking for stored data
@@ -31,14 +36,27 @@ const Dashboard = () => {
     try {
       const parsedUser = JSON.parse(storedUser);
       setUserData(parsedUser);
+      
+      // Find matches for the current user and show top 3
+      const userMatches = findSkillMatches(parsedUser);
+      setTopMatches(userMatches.slice(0, 3));
     } catch (error) {
       console.error('Failed to parse user data:', error);
       localStorage.removeItem('skillswap_user');
       navigate('/auth?mode=login');
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   }, [navigate]);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
 
   if (isLoading) {
     return (
@@ -77,7 +95,11 @@ const Dashboard = () => {
               ) : (
                 <div className="text-muted-foreground">
                   <p>You haven't added any skills you can teach yet.</p>
-                  <Button variant="outline" className="mt-4">
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => navigate('/profile')}
+                  >
                     Add Teaching Skills
                   </Button>
                 </div>
@@ -102,7 +124,11 @@ const Dashboard = () => {
               ) : (
                 <div className="text-muted-foreground">
                   <p>You haven't added any skills you want to learn yet.</p>
-                  <Button variant="outline" className="mt-4">
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => navigate('/profile')}
+                  >
                     Add Learning Goals
                   </Button>
                 </div>
@@ -112,17 +138,61 @@ const Dashboard = () => {
         </div>
 
         <div className="mb-10">
-          <h2 className="text-2xl font-bold mb-4">Recommended Skill Exchanges</h2>
+          <h2 className="text-2xl font-bold mb-4">Skill Matches</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">No matches yet</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Add more skills to find your perfect skill exchange partners.</p>
-              </CardContent>
-            </Card>
+            {topMatches.length > 0 ? (
+              topMatches.map((match) => (
+                <Card key={match.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-10 w-10">
+                        {match.profilePicture ? (
+                          <AvatarImage src={match.profilePicture} alt={match.name} />
+                        ) : (
+                          <AvatarFallback>{getInitials(match.name)}</AvatarFallback>
+                        )}
+                      </Avatar>
+                      <CardTitle className="text-lg">{match.name}</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="text-sm">
+                    <div className="mb-2">
+                      <span className="font-medium text-primary">They teach:</span>{' '}
+                      {match.canTeachYou.join(', ')}
+                    </div>
+                    <div className="mb-3">
+                      <span className="font-medium text-secondary">You teach:</span>{' '}
+                      {match.youCanTeach.join(', ')}
+                    </div>
+                    <Button 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => navigate('/skill-matches')}
+                    >
+                      View Match
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card className="col-span-full p-6 text-center">
+                <CardContent className="pt-2">
+                  <p className="text-muted-foreground mb-4">No matches found yet. Add more skills to find potential skill exchange partners.</p>
+                  <Button onClick={() => navigate('/skill-matches')}>Find Matches</Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
+          {topMatches.length > 0 && (
+            <div className="text-center mt-4">
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/skill-matches')}
+              >
+                See All Matches
+              </Button>
+            </div>
+          )}
         </div>
       </main>
       <Footer />

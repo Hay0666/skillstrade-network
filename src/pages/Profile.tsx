@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { toast } from 'sonner';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Camera, Upload } from 'lucide-react';
+import { updateMatchesForAllUsers } from '@/utils/matchingSystem';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -172,6 +173,9 @@ const Profile = () => {
       
       localStorage.setItem('skillswap_user', JSON.stringify(updatedUser));
       setUser(updatedUser);
+      
+      // Update matches for all users when skills change
+      updateMatchesForAllUsers();
       
       // Clear password fields
       setFormData(prev => ({

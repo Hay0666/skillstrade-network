@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import ExploreSkills from "./pages/ExploreSkills";
 import About from "./pages/About";
+import SkillMatches from "./pages/SkillMatches";
 import NotFound from "./pages/NotFound";
 import { AnimatePresence } from "framer-motion";
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/explore" element={<ExploreSkills />} />
             <Route path="/about" element={<About />} />
+            <Route path="/skill-matches" element={<SkillMatches />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
