@@ -6,15 +6,17 @@ import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { UserMatch } from '@/types/user';
+import { User, UserMatch } from '@/types/user';
 import { findSkillMatches } from '@/utils/matchingSystem';
 import { loadSampleProfiles } from '@/utils/loadSampleProfiles';
 
 const SkillMatches = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-  const [matches, setMatches] = useState<UserMatch[]>([]);
+  const [autoMatches, setAutoMatches] = useState<UserMatch[]>([]);
+  const [manualMatches, setManualMatches] = useState<User[]>([]);
   const [userData, setUserData] = useState<any>(null);
 
   const loadMatches = () => {
@@ -31,9 +33,23 @@ const SkillMatches = () => {
       const parsedUser = JSON.parse(storedUser);
       setUserData(parsedUser);
       
-      // Find matches for the current user
+      // Find automatic matches for the current user
       const userMatches = findSkillMatches(parsedUser);
-      setMatches(userMatches);
+      setAutoMatches(userMatches);
+      
+      // Load manually matched profiles
+      const savedManualMatches = localStorage.getItem(`skillswap_manual_matches_${parsedUser.id}`);
+      if (savedManualMatches) {
+        const matchIds = JSON.parse(savedManualMatches) as string[];
+        
+        // Get all users from localStorage
+        const usersString = localStorage.getItem('skillswap_users');
+        if (usersString) {
+          const allUsers: User[] = JSON.parse(usersString);
+          const manuallyMatchedUsers = allUsers.filter(user => matchIds.includes(user.id));
+          setManualMatches(manuallyMatchedUsers);
+        }
+      }
     } catch (error) {
       console.error('Failed to parse user data:', error);
       toast.error('Error loading user data');
@@ -67,6 +83,10 @@ const SkillMatches = () => {
     toast.success('Contact request sent!');
   };
 
+  const handleBrowseProfiles = () => {
+    navigate('/browse-profiles');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -86,80 +106,158 @@ const SkillMatches = () => {
               Connect with people who want to learn what you teach and can teach what you want to learn
             </p>
           </div>
-          <div className="mt-4 md:mt-0">
-            <Button onClick={handleLoadSampleProfiles} variant="outline" className="mr-2">
+          <div className="mt-4 md:mt-0 space-x-2">
+            <Button onClick={handleBrowseProfiles} variant="default" className="mr-2">
+              Browse All Profiles
+            </Button>
+            <Button onClick={handleLoadSampleProfiles} variant="outline">
               Load Sample Profiles
             </Button>
           </div>
         </div>
 
-        {matches.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {matches.map((match) => (
-              <Card key={match.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="h-12 w-12">
-                      {match.profilePicture ? (
-                        <AvatarImage src={match.profilePicture} alt={match.name} />
-                      ) : (
-                        <AvatarFallback>{getInitials(match.name)}</AvatarFallback>
-                      )}
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">{match.name}</CardTitle>
-                      <CardDescription>Match Score: {match.matchScore}%</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
+        <Tabs defaultValue="automatic" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="automatic">Automatic Matches</TabsTrigger>
+            <TabsTrigger value="manual">Manual Matches</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="automatic">
+            {autoMatches.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {autoMatches.map((match) => (
+                  <Card key={match.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-12 w-12">
+                          {match.profilePicture ? (
+                            <AvatarImage src={match.profilePicture} alt={match.name} />
+                          ) : (
+                            <AvatarFallback>{getInitials(match.name)}</AvatarFallback>
+                          )}
+                        </Avatar>
+                        <div>
+                          <CardTitle className="text-lg">{match.name}</CardTitle>
+                          <CardDescription>Match Score: {match.matchScore}%</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-primary mb-1">They can teach you:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {match.canTeachYou.map((skill, index) => (
+                            <span key={index} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-secondary mb-1">You can teach them:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {match.youCanTeach.map((skill, index) => (
+                            <span key={index} className="bg-secondary/20 text-secondary-foreground text-xs px-2 py-1 rounded-full">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <Button 
+                        onClick={() => handleContactUser(match.id)} 
+                        className="w-full"
+                        variant="default"
+                      >
+                        Contact
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="w-full text-center py-12">
                 <CardContent>
-                  <div className="mb-4">
-                    <h4 className="text-sm font-medium text-primary mb-1">They can teach you:</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {match.canTeachYou.map((skill, index) => (
-                        <span key={index} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
+                  <h3 className="text-xl font-medium mb-2">No automatic matches found yet</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Try adding more skills to your profile to increase your chances of finding a match
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button onClick={() => navigate('/profile')}>Update Your Skills</Button>
+                    <Button onClick={handleBrowseProfiles} variant="outline">
+                      Browse All Profiles
+                    </Button>
                   </div>
-                  <div className="mb-4">
-                    <h4 className="text-sm font-medium text-secondary mb-1">You can teach them:</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {match.youCanTeach.map((skill, index) => (
-                        <span key={index} className="bg-secondary/20 text-secondary-foreground text-xs px-2 py-1 rounded-full">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <Button 
-                    onClick={() => handleContactUser(match.id)} 
-                    className="w-full"
-                    variant="default"
-                  >
-                    Contact
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="manual">
+            {manualMatches.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {manualMatches.map((profile) => (
+                  <Card key={profile.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-12 w-12">
+                          {profile.profilePicture ? (
+                            <AvatarImage src={profile.profilePicture} alt={profile.name} />
+                          ) : (
+                            <AvatarFallback>{getInitials(profile.name)}</AvatarFallback>
+                          )}
+                        </Avatar>
+                        <div>
+                          <CardTitle className="text-lg">{profile.name}</CardTitle>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-primary mb-1">Skills They Teach:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {profile.teachSkills.map((skill, index) => (
+                            <span key={index} className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-secondary mb-1">Skills They Want to Learn:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {profile.learnSkills.map((skill, index) => (
+                            <span key={index} className="bg-secondary/20 text-secondary-foreground text-xs px-2 py-1 rounded-full">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <Button 
+                        onClick={() => handleContactUser(profile.id)} 
+                        className="w-full"
+                        variant="default"
+                      >
+                        Contact
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="w-full text-center py-12">
+                <CardContent>
+                  <h3 className="text-xl font-medium mb-2">No manual matches yet</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Browse all profiles and connect with users you're interested in learning from
+                  </p>
+                  <Button onClick={handleBrowseProfiles} variant="default">
+                    Browse All Profiles
                   </Button>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        ) : (
-          <Card className="w-full text-center py-12">
-            <CardContent>
-              <h3 className="text-xl font-medium mb-2">No matches found yet</h3>
-              <p className="text-muted-foreground mb-6">
-                Try adding more skills to your profile to increase your chances of finding a match
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button onClick={() => navigate('/profile')}>Update Your Skills</Button>
-                <Button onClick={handleLoadSampleProfiles} variant="outline">
-                  Load Sample Profiles
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
       <Footer />
     </div>

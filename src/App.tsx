@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import ExploreSkills from "./pages/ExploreSkills";
 import About from "./pages/About";
 import SkillMatches from "./pages/SkillMatches";
+import BrowseProfiles from "./pages/BrowseProfiles";
 import NotFound from "./pages/NotFound";
 import { AnimatePresence } from "framer-motion";
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/explore" element={<ExploreSkills />} />
             <Route path="/about" element={<About />} />
             <Route path="/skill-matches" element={<SkillMatches />} />
+            <Route path="/browse-profiles" element={<BrowseProfiles />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

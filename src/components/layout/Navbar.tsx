@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, LogOut, Settings } from 'lucide-react';
+import { Menu, X, LogOut, Settings, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
@@ -101,6 +101,16 @@ const Navbar = () => {
             <Link to="/explore" className="text-sm font-medium hover:text-primary transition-colors">
               Explore Skills
             </Link>
+            {isLoggedIn && (
+              <>
+                <Link to="/browse-profiles" className="text-sm font-medium hover:text-primary transition-colors">
+                  Browse Profiles
+                </Link>
+                <Link to="/skill-matches" className="text-sm font-medium hover:text-primary transition-colors">
+                  Your Matches
+                </Link>
+              </>
+            )}
             <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
               About
             </Link>
@@ -202,6 +212,25 @@ const Navbar = () => {
               >
                 Explore Skills
               </Link>
+              {isLoggedIn && (
+                <>
+                  <Link 
+                    to="/browse-profiles" 
+                    className="py-2 text-sm font-medium hover:text-primary transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Users size={16} className="inline mr-2" />
+                    Browse Profiles
+                  </Link>
+                  <Link 
+                    to="/skill-matches" 
+                    className="py-2 text-sm font-medium hover:text-primary transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Your Matches
+                  </Link>
+                </>
+              )}
               <Link 
                 to="/about" 
                 className="py-2 text-sm font-medium hover:text-primary transition-colors"
@@ -209,6 +238,7 @@ const Navbar = () => {
               >
                 About
               </Link>
+              
               <div className="flex flex-col space-y-2 pt-2 border-t">
                 {isLoggedIn ? (
                   <>
