@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import ProfileView from "./pages/ProfileView";
 import ExploreSkills from "./pages/ExploreSkills";
 import About from "./pages/About";
 import SkillMatches from "./pages/SkillMatches";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:userId" element={<ProfileView />} />
             <Route path="/explore" element={<ExploreSkills />} />
             <Route path="/about" element={<About />} />
             <Route path="/skill-matches" element={<SkillMatches />} />

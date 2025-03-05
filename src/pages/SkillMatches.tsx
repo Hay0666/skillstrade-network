@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -11,6 +10,7 @@ import { toast } from 'sonner';
 import { User, UserMatch } from '@/types/user';
 import { findSkillMatches } from '@/utils/matchingSystem';
 import { loadSampleProfiles } from '@/utils/loadSampleProfiles';
+import { ArrowRight } from 'lucide-react';
 
 const SkillMatches = () => {
   const navigate = useNavigate();
@@ -20,7 +20,6 @@ const SkillMatches = () => {
   const [userData, setUserData] = useState<any>(null);
 
   const loadMatches = () => {
-    // Check if user is logged in
     const storedUser = localStorage.getItem('skillswap_user');
     
     if (!storedUser) {
@@ -33,16 +32,13 @@ const SkillMatches = () => {
       const parsedUser = JSON.parse(storedUser);
       setUserData(parsedUser);
       
-      // Find automatic matches for the current user
       const userMatches = findSkillMatches(parsedUser);
       setAutoMatches(userMatches);
       
-      // Load manually matched profiles
       const savedManualMatches = localStorage.getItem(`skillswap_manual_matches_${parsedUser.id}`);
       if (savedManualMatches) {
         const matchIds = JSON.parse(savedManualMatches) as string[];
         
-        // Get all users from localStorage
         const usersString = localStorage.getItem('skillswap_users');
         if (usersString) {
           const allUsers: User[] = JSON.parse(usersString);
@@ -79,8 +75,11 @@ const SkillMatches = () => {
   };
 
   const handleContactUser = (matchId: string) => {
-    // In a real app, this would open a chat or messaging system
     toast.success('Contact request sent!');
+  };
+
+  const handleViewProfile = (profileId: string) => {
+    navigate(`/profile/${profileId}`);
   };
 
   const handleBrowseProfiles = () => {
@@ -163,13 +162,22 @@ const SkillMatches = () => {
                           ))}
                         </div>
                       </div>
-                      <Button 
-                        onClick={() => handleContactUser(match.id)} 
-                        className="w-full"
-                        variant="default"
-                      >
-                        Contact
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={() => handleContactUser(match.id)} 
+                          className="flex-1"
+                          variant="default"
+                        >
+                          Contact
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => handleViewProfile(match.id)}
+                        >
+                          <ArrowRight size={16} />
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -232,13 +240,22 @@ const SkillMatches = () => {
                           ))}
                         </div>
                       </div>
-                      <Button 
-                        onClick={() => handleContactUser(profile.id)} 
-                        className="w-full"
-                        variant="default"
-                      >
-                        Contact
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={() => handleContactUser(profile.id)} 
+                          className="flex-1"
+                          variant="default"
+                        >
+                          Contact
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => handleViewProfile(profile.id)}
+                        >
+                          <ArrowRight size={16} />
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

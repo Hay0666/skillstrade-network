@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -23,7 +22,6 @@ const BrowseProfiles = () => {
   const [manualMatches, setManualMatches] = useState<string[]>([]);
 
   useEffect(() => {
-    // Check if user is logged in
     const storedUser = localStorage.getItem('skillswap_user');
     
     if (!storedUser) {
@@ -36,11 +34,9 @@ const BrowseProfiles = () => {
       const parsedUser = JSON.parse(storedUser);
       setCurrentUser(parsedUser);
       
-      // Load all available profiles
       const usersString = localStorage.getItem('skillswap_users');
       if (usersString) {
         const allUsers: User[] = JSON.parse(usersString);
-        // Filter out the current user
         const otherUsers = allUsers.filter(user => user.id !== parsedUser.id);
         setProfiles(otherUsers);
         setFilteredProfiles(otherUsers);
@@ -49,7 +45,6 @@ const BrowseProfiles = () => {
         setFilteredProfiles([]);
       }
       
-      // Load any previously saved manual matches
       const savedMatches = localStorage.getItem(`skillswap_manual_matches_${parsedUser.id}`);
       if (savedMatches) {
         setManualMatches(JSON.parse(savedMatches));
@@ -63,22 +58,15 @@ const BrowseProfiles = () => {
     }
   }, [navigate]);
 
-  // Filter profiles based on search query
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredProfiles(profiles);
     } else {
       const query = searchQuery.toLowerCase();
       const filtered = profiles.filter(profile => {
-        // Search by name
         if (profile.name.toLowerCase().includes(query)) return true;
-        
-        // Search by teach skills
         if (profile.teachSkills.some(skill => skill.toLowerCase().includes(query))) return true;
-        
-        // Search by learn skills
         if (profile.learnSkills.some(skill => skill.toLowerCase().includes(query))) return true;
-        
         return false;
       });
       setFilteredProfiles(filtered);
@@ -98,7 +86,6 @@ const BrowseProfiles = () => {
     loadSampleProfiles();
     toast.success('Sample profiles loaded successfully');
     
-    // Reload profiles after adding samples
     const usersString = localStorage.getItem('skillswap_users');
     if (usersString && currentUser) {
       const allUsers: User[] = JSON.parse(usersString);
@@ -124,12 +111,10 @@ const BrowseProfiles = () => {
   const handleManualMatch = (profileId: string) => {
     if (!currentUser) return;
     
-    // Add to manual matches if not already matched
     if (!manualMatches.includes(profileId)) {
       const updatedMatches = [...manualMatches, profileId];
       setManualMatches(updatedMatches);
       
-      // Save to localStorage
       localStorage.setItem(
         `skillswap_manual_matches_${currentUser.id}`, 
         JSON.stringify(updatedMatches)
@@ -143,6 +128,10 @@ const BrowseProfiles = () => {
 
   const isMatched = (profileId: string) => {
     return manualMatches.includes(profileId);
+  };
+
+  const handleViewProfile = (profileId: string) => {
+    navigate(`/profile/${profileId}`);
   };
 
   if (isLoading) {
@@ -240,10 +229,7 @@ const BrowseProfiles = () => {
                     <Button 
                       variant="outline" 
                       size="icon"
-                      onClick={() => {
-                        // In a real app, this would navigate to a detailed profile view
-                        toast.info(`Viewing ${profile.name}'s profile`);
-                      }}
+                      onClick={() => handleViewProfile(profile.id)}
                     >
                       <ArrowRight size={16} />
                     </Button>

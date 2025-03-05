@@ -7,6 +7,8 @@ export interface User {
   teachSkills: string[];
   learnSkills: string[];
   profilePicture?: string;
+  bio?: string;
+  ratings?: UserRating[];
 }
 
 export interface UserMatch {
@@ -17,4 +19,14 @@ export interface UserMatch {
   profilePicture?: string;
   canTeachYou: string[];
   youCanTeach: string[];
+}
+
+export interface UserRating {
+  id: string;
+  userId: string;
+  ratedById: string;
+  raterName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
 }
