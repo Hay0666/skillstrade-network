@@ -9,6 +9,10 @@ export interface User {
   profilePicture?: string;
   bio?: string;
   ratings?: UserRating[];
+  subscription?: {
+    planId: string;
+    status: 'free' | 'active' | 'canceled' | 'expired' | 'trial';
+  };
 }
 
 export interface UserMatch {
