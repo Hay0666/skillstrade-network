@@ -5,7 +5,19 @@ import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Search, ArrowLeft } from 'lucide-react';
+import ProfileCard from '@/components/profile/ProfileCard';
+import { User } from '@/types/user';
+import { sampleProfiles } from '@/utils/sampleProfiles';
 
 // Sample skill categories and popular skills for demonstration
 const SKILL_CATEGORIES = [
@@ -29,6 +41,28 @@ const POPULAR_SKILLS = [
 const ExploreSkills = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredSkills, setFilteredSkills] = useState(POPULAR_SKILLS);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [matchingProfiles, setMatchingProfiles] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [allProfiles, setAllProfiles] = useState<User[]>([]);
+
+  useEffect(() => {
+    // Load the current user from localStorage
+    const storedUser = localStorage.getItem('skillswap_user');
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+
+    // Load all profiles from localStorage or use sample profiles
+    const usersString = localStorage.getItem('skillswap_users');
+    if (usersString) {
+      setAllProfiles(JSON.parse(usersString));
+    } else {
+      setAllProfiles(sampleProfiles);
+    }
+  }, []);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
@@ -41,6 +75,35 @@ const ExploreSkills = () => {
       setFilteredSkills(results);
     }
   }, [searchQuery]);
+
+  const handleCategoryClick = (categoryName: string) => {
+    setSelectedCategory(categoryName);
+    const skillsInCategory = POPULAR_SKILLS.filter(skill => skill.category === categoryName);
+    setFilteredSkills(skillsInCategory);
+  };
+
+  const handleSkillClick = (skillName: string) => {
+    setSelectedSkill(skillName);
+    
+    // Find profiles that teach or learn the selected skill
+    const teaching = allProfiles.filter(profile => 
+      profile.teachSkills.includes(skillName) && profile.id !== currentUser?.id
+    );
+    
+    const learning = allProfiles.filter(profile => 
+      profile.learnSkills.includes(skillName) && 
+      !teaching.some(p => p.id === profile.id) && 
+      profile.id !== currentUser?.id
+    );
+    
+    setMatchingProfiles([...teaching, ...learning]);
+    setIsDialogOpen(true);
+  };
+
+  const handleBackToExplore = () => {
+    setSelectedSkill(null);
+    setIsDialogOpen(false);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -77,16 +140,24 @@ const ExploreSkills = () => {
                 </CardHeader>
                 <CardContent>
                   <CardDescription>{category.count} skills available</CardDescription>
-                  <Button variant="outline" className="mt-2 w-full">Browse</Button>
+                  <Button 
+                    variant="outline" 
+                    className="mt-2 w-full"
+                    onClick={() => handleCategoryClick(category.name)}
+                  >
+                    Browse
+                  </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
 
-        {/* Popular Skills */}
+        {/* Popular Skills or Filtered Skills */}
         <div className="mb-10">
-          <h2 className="text-2xl font-bold mb-4">Popular Skills</h2>
+          <h2 className="text-2xl font-bold mb-4">
+            {selectedCategory ? `${selectedCategory} Skills` : 'Popular Skills'}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredSkills.map((skill) => (
               <Card key={skill.id}>
@@ -97,8 +168,13 @@ const ExploreSkills = () => {
                 <CardContent>
                   <p className="text-sm text-muted-foreground">{skill.users} users teaching this skill</p>
                   <div className="flex gap-2 mt-3">
-                    <Button variant="default" size="sm">Learn</Button>
-                    <Button variant="outline" size="sm">Teach</Button>
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={() => handleSkillClick(skill.name)}
+                    >
+                      Explore Profiles
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -110,6 +186,99 @@ const ExploreSkills = () => {
             )}
           </div>
         </div>
+
+        {/* Skill Profiles Dialog */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <div className="flex items-center">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="mr-2 p-1 h-8 w-8"
+                  onClick={handleBackToExplore}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <DialogTitle>Profiles for {selectedSkill}</DialogTitle>
+              </div>
+              <DialogDescription>
+                Browse profiles of users who can teach or want to learn this skill
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Tabs defaultValue="all" className="mt-2">
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="teaching">Teaching</TabsTrigger>
+                <TabsTrigger value="learning">Learning</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="all" className="mt-4">
+                {matchingProfiles.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No profiles found for this skill</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {matchingProfiles.map(profile => (
+                      <ProfileCard 
+                        key={profile.id} 
+                        profile={profile} 
+                        selectedSkill={selectedSkill || undefined} 
+                        currentUser={currentUser}
+                      />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="teaching" className="mt-4">
+                {matchingProfiles.filter(p => selectedSkill && p.teachSkills.includes(selectedSkill)).length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No profiles teaching this skill</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {matchingProfiles
+                      .filter(p => selectedSkill && p.teachSkills.includes(selectedSkill))
+                      .map(profile => (
+                        <ProfileCard 
+                          key={profile.id} 
+                          profile={profile} 
+                          selectedSkill={selectedSkill || undefined} 
+                          currentUser={currentUser}
+                        />
+                      ))
+                    }
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="learning" className="mt-4">
+                {matchingProfiles.filter(p => selectedSkill && p.learnSkills.includes(selectedSkill)).length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No profiles learning this skill</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {matchingProfiles
+                      .filter(p => selectedSkill && p.learnSkills.includes(selectedSkill))
+                      .map(profile => (
+                        <ProfileCard 
+                          key={profile.id} 
+                          profile={profile} 
+                          selectedSkill={selectedSkill || undefined} 
+                          currentUser={currentUser}
+                        />
+                      ))
+                    }
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
 
         {/* Featured Image */}
         <div className="rounded-lg overflow-hidden mb-10">
