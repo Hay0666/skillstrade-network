@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { User, UserRating } from '@/types/user';
 import { ArrowLeft, Star, MessageCircle } from 'lucide-react';
+import { startConversation } from '@/utils/chatUtils';
 
 const ProfileView = () => {
   const { userId } = useParams();
@@ -84,8 +85,18 @@ const ProfileView = () => {
   };
 
   const handleContactUser = () => {
-    // In a real app, this would open a messaging interface
-    toast.success(`Contact request sent to ${profileData?.name}`);
+    if (!currentUser || !profileData) {
+      toast.error('Something went wrong');
+      return;
+    }
+    
+    const conversationId = startConversation(currentUser, profileData);
+    if (conversationId) {
+      toast.success(`Started conversation with ${profileData.name}`);
+      navigate(`/messages/${conversationId}`);
+    } else {
+      toast.error('Failed to start conversation');
+    }
   };
 
   const renderStars = (rating: number) => {

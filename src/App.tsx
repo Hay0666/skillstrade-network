@@ -14,6 +14,8 @@ import About from "./pages/About";
 import SkillMatches from "./pages/SkillMatches";
 import BrowseProfiles from "./pages/BrowseProfiles";
 import Subscription from "./pages/Subscription";
+import Messages from "./pages/Messages";
+import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 import { AnimatePresence } from "framer-motion";
 
@@ -37,6 +39,8 @@ const App = () => (
             <Route path="/skill-matches" element={<SkillMatches />} />
             <Route path="/browse-profiles" element={<BrowseProfiles />} />
             <Route path="/subscription" element={<Subscription />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/messages/:conversationId" element={<Chat />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
