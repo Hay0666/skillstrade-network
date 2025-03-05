@@ -234,7 +234,7 @@ const ModerationDashboard: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Dialog>
+    </Card>
   );
 };
 

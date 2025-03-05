@@ -232,11 +232,11 @@ export const getPredefinedMessages = (): PredefinedMessage[] => {
   return [
     { id: '1', content: 'Hi there! I saw we have matching skills.', category: 'greeting' },
     { id: '2', content: 'Would you be interested in scheduling a skill swap session?', category: 'question' },
-    { id: '3', content: 'I'm available on weekends for skill exchanges.', category: 'response' },
+    { id: '3', content: 'I\'m available on weekends for skill exchanges.', category: 'response' },
     { id: '4', content: 'Could you tell me more about your experience with this skill?', category: 'question' },
     { id: '5', content: 'Thanks for the chat! Looking forward to learning from you.', category: 'follow-up' },
-    { id: '6', content: 'What's your preferred method for skill sharing sessions?', category: 'question' },
-    { id: '7', content: 'I'm a beginner in this area, just so you know.', category: 'response' },
+    { id: '6', content: 'What\'s your preferred method for skill sharing sessions?', category: 'question' },
+    { id: '7', content: 'I\'m a beginner in this area, just so you know.', category: 'response' },
     { id: '8', content: 'I have 3+ years of experience in this field.', category: 'response' }
   ];
 };
