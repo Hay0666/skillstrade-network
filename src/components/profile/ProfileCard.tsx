@@ -75,44 +75,39 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, selectedSkill, curre
     : 0;
   
   // Check if the user teaches or learns the selected skill with more flexible matching
-  const isTeaching = selectedSkill 
-    ? profile.teachSkills.some(skill => 
-        skill.toLowerCase() === selectedSkill.toLowerCase() ||
-        selectedSkill.toLowerCase().includes(skill.toLowerCase()) ||
-        skill.toLowerCase().includes(selectedSkill.toLowerCase())
-      )
-    : false;
+  const matchSkill = (skillArray: string[], targetSkill: string): boolean => {
+    if (!targetSkill) return false;
+    const targetLower = targetSkill.toLowerCase();
     
-  const isLearning = selectedSkill 
-    ? profile.learnSkills.some(skill => 
-        skill.toLowerCase() === selectedSkill.toLowerCase() ||
-        selectedSkill.toLowerCase().includes(skill.toLowerCase()) ||
-        skill.toLowerCase().includes(selectedSkill.toLowerCase())
-      )
-    : false;
-  
-  // Function to find the matching skill
-  const findMatchingTeachSkill = () => {
-    if (!selectedSkill) return null;
-    return profile.teachSkills.find(skill => 
-      skill.toLowerCase() === selectedSkill.toLowerCase() ||
-      selectedSkill.toLowerCase().includes(skill.toLowerCase()) ||
-      skill.toLowerCase().includes(selectedSkill.toLowerCase())
-    );
+    return skillArray.some(skill => {
+      const skillLower = skill.toLowerCase();
+      return skillLower === targetLower || 
+             targetLower.includes(skillLower) || 
+             skillLower.includes(targetLower);
+    });
   };
   
-  const findMatchingLearnSkill = () => {
-    if (!selectedSkill) return null;
-    return profile.learnSkills.find(skill => 
-      skill.toLowerCase() === selectedSkill.toLowerCase() ||
-      selectedSkill.toLowerCase().includes(skill.toLowerCase()) ||
-      skill.toLowerCase().includes(selectedSkill.toLowerCase())
-    );
+  const isTeaching = selectedSkill ? matchSkill(profile.teachSkills, selectedSkill) : false;
+  const isLearning = selectedSkill ? matchSkill(profile.learnSkills, selectedSkill) : false;
+  
+  // Function to find the matching skill
+  const findMatchingSkill = (skillArray: string[], targetSkill: string): string | null => {
+    if (!targetSkill) return null;
+    const targetLower = targetSkill.toLowerCase();
+    
+    const match = skillArray.find(skill => {
+      const skillLower = skill.toLowerCase();
+      return skillLower === targetLower || 
+             targetLower.includes(skillLower) || 
+             skillLower.includes(targetLower);
+    });
+    
+    return match || null;
   };
   
   // Get the actual skills that match
-  const matchingTeachSkill = findMatchingTeachSkill();
-  const matchingLearnSkill = findMatchingLearnSkill();
+  const matchingTeachSkill = selectedSkill ? findMatchingSkill(profile.teachSkills, selectedSkill) : null;
+  const matchingLearnSkill = selectedSkill ? findMatchingSkill(profile.learnSkills, selectedSkill) : null;
   
   return (
     <Card className="h-full flex flex-col">

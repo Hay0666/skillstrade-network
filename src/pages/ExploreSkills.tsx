@@ -30,24 +30,19 @@ const SKILL_CATEGORIES = [
   { id: 6, name: 'Sports', count: 67 },
 ];
 
-const POPULAR_SKILLS = [
-  { id: 1, name: 'JavaScript Programming', category: 'Technology', users: 48 },
-  { id: 2, name: 'Watercolor Painting', category: 'Arts & Crafts', users: 32 },
-  { id: 3, name: 'Spanish Language', category: 'Languages', users: 41 },
-  { id: 4, name: 'Guitar Lessons', category: 'Music', users: 37 },
-  { id: 5, name: 'French Cuisine', category: 'Cooking', users: 29 },
-  { id: 6, name: 'Yoga', category: 'Sports', users: 26 },
-];
-
+// Update to include dynamic counts of teaching users
 const ExploreSkills = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredSkills, setFilteredSkills] = useState(POPULAR_SKILLS);
+  const [filteredSkills, setFilteredSkills] = useState<Array<{id: number, name: string, category: string, users: number}>>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [matchingProfiles, setMatchingProfiles] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [allProfiles, setAllProfiles] = useState<User[]>([]);
+  const [teachingProfiles, setTeachingProfiles] = useState<User[]>([]);
+  const [learningProfiles, setLearningProfiles] = useState<User[]>([]);
+  const [popularSkills, setPopularSkills] = useState<Array<{id: number, name: string, category: string, users: number}>>([]);
 
   useEffect(() => {
     // Load sample profiles into localStorage if not already present
@@ -61,60 +56,117 @@ const ExploreSkills = () => {
 
     // Load all profiles from localStorage or use sample profiles directly
     const usersString = localStorage.getItem('skillswap_users');
+    let profiles: User[] = [];
     if (usersString) {
-      setAllProfiles(JSON.parse(usersString));
+      profiles = JSON.parse(usersString);
     } else {
-      setAllProfiles(sampleProfiles);
+      profiles = sampleProfiles;
     }
+    setAllProfiles(profiles);
+
+    // Generate dynamic popular skills based on actual profiles
+    const skillCountMap = new Map<string, {category: string, count: number}>();
+    
+    // First, establish the initial fixed popular skills with 0 counts
+    const initialSkills = [
+      { key: 'JavaScript Programming', category: 'Technology' },
+      { key: 'Watercolor Painting', category: 'Arts & Crafts' },
+      { key: 'Spanish Language', category: 'Languages' },
+      { key: 'Guitar Lessons', category: 'Music' },
+      { key: 'French Cuisine', category: 'Cooking' },
+      { key: 'Yoga', category: 'Sports' },
+    ];
+    
+    initialSkills.forEach(skill => {
+      skillCountMap.set(skill.key, { category: skill.category, count: 0 });
+    });
+    
+    // Count actual teaching profiles for each skill
+    profiles.forEach(profile => {
+      profile.teachSkills.forEach(skill => {
+        // Match skill to one of our categories if possible
+        let category = 'Technology'; // Default category
+        
+        if (skill.toLowerCase().includes('paint') || skill.toLowerCase().includes('craft') || skill.toLowerCase().includes('art')) {
+          category = 'Arts & Crafts';
+        } else if (skill.toLowerCase().includes('language') || skill.toLowerCase().includes('spanish') || skill.toLowerCase().includes('french')) {
+          category = 'Languages';
+        } else if (skill.toLowerCase().includes('music') || skill.toLowerCase().includes('guitar') || skill.toLowerCase().includes('piano')) {
+          category = 'Music';
+        } else if (skill.toLowerCase().includes('cook') || skill.toLowerCase().includes('cuisine') || skill.toLowerCase().includes('baking')) {
+          category = 'Cooking';
+        } else if (skill.toLowerCase().includes('yoga') || skill.toLowerCase().includes('sport') || skill.toLowerCase().includes('exercise')) {
+          category = 'Sports';
+        }
+        
+        // Try to map to an existing skill
+        let mapped = false;
+        for (const [key, value] of skillCountMap.entries()) {
+          if (key.toLowerCase().includes(skill.toLowerCase()) || skill.toLowerCase().includes(key.toLowerCase())) {
+            skillCountMap.set(key, { category: value.category, count: value.count + 1 });
+            mapped = true;
+            break;
+          }
+        }
+        
+        // If not mapped to existing, add new skill
+        if (!mapped) {
+          skillCountMap.set(skill, { category, count: 1 });
+        }
+      });
+    });
+    
+    // Convert map to array and sort by count
+    const dynamicSkills = Array.from(skillCountMap.entries())
+      .map(([name, data], index) => ({
+        id: index + 1,
+        name,
+        category: data.category,
+        users: data.count
+      }))
+      .sort((a, b) => b.users - a.users);
+    
+    // Take top skills or all if less than 6
+    const topSkills = dynamicSkills.slice(0, Math.min(dynamicSkills.length, 6));
+    setPopularSkills(topSkills);
+    setFilteredSkills(topSkills);
   }, []);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
       // If category is selected, still filter by category
       if (selectedCategory) {
-        const skillsInCategory = POPULAR_SKILLS.filter(skill => skill.category === selectedCategory);
+        const skillsInCategory = popularSkills.filter(skill => skill.category === selectedCategory);
         setFilteredSkills(skillsInCategory);
       } else {
-        setFilteredSkills(POPULAR_SKILLS);
+        setFilteredSkills(popularSkills);
       }
     } else {
       const query = searchQuery.toLowerCase();
       // If category is selected, filter within that category
       const baseSkills = selectedCategory 
-        ? POPULAR_SKILLS.filter(skill => skill.category === selectedCategory)
-        : POPULAR_SKILLS;
+        ? popularSkills.filter(skill => skill.category === selectedCategory)
+        : popularSkills;
         
       const results = baseSkills.filter(
         skill => skill.name.toLowerCase().includes(query) || skill.category.toLowerCase().includes(query)
       );
       setFilteredSkills(results);
     }
-  }, [searchQuery, selectedCategory]);
-
-  // Debugging function to check skills in profiles
-  const debugProfileSkills = () => {
-    console.log('All profiles:', allProfiles);
-    allProfiles.forEach(profile => {
-      console.log(`Profile ${profile.name} teaches: ${profile.teachSkills.join(', ')}`);
-      console.log(`Profile ${profile.name} learns: ${profile.learnSkills.join(', ')}`);
-    });
-  };
+  }, [searchQuery, selectedCategory, popularSkills]);
 
   const handleCategoryClick = (categoryName: string) => {
     setSelectedCategory(categoryName);
-    const skillsInCategory = POPULAR_SKILLS.filter(skill => skill.category === categoryName);
+    const skillsInCategory = popularSkills.filter(skill => skill.category === categoryName);
     setFilteredSkills(skillsInCategory);
   };
 
   const handleSkillClick = (skillName: string) => {
     setSelectedSkill(skillName);
     
-    // Debug log to check profiles and the selected skill
     console.log(`Finding profiles for skill: ${skillName}`);
-    debugProfileSkills();
     
-    // Find profiles that teach or learn the selected skill
-    // Using simple string comparison to ensure matches work
+    // Get the profiles that teach the selected skill
     const teaching = allProfiles.filter(profile => 
       profile.teachSkills.some(skill => 
         skill.toLowerCase() === skillName.toLowerCase() ||
@@ -123,6 +175,7 @@ const ExploreSkills = () => {
       ) && profile.id !== currentUser?.id
     );
     
+    // Get the profiles that learn the selected skill
     const learning = allProfiles.filter(profile => 
       profile.learnSkills.some(skill => 
         skill.toLowerCase() === skillName.toLowerCase() ||
@@ -135,6 +188,8 @@ const ExploreSkills = () => {
     
     console.log(`Found ${teaching.length} teachers and ${learning.length} learners`);
     
+    setTeachingProfiles(teaching);
+    setLearningProfiles(learning);
     setMatchingProfiles([...teaching, ...learning]);
     setIsDialogOpen(true);
   };
@@ -201,7 +256,7 @@ const ExploreSkills = () => {
                 variant="ghost" 
                 onClick={() => {
                   setSelectedCategory(null);
-                  setFilteredSkills(POPULAR_SKILLS);
+                  setFilteredSkills(popularSkills);
                   setSearchQuery('');
                 }}
                 className="ml-2 text-sm"
@@ -261,9 +316,9 @@ const ExploreSkills = () => {
             
             <Tabs defaultValue="all" className="mt-2">
               <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="teaching">Teaching</TabsTrigger>
-                <TabsTrigger value="learning">Learning</TabsTrigger>
+                <TabsTrigger value="all">All ({matchingProfiles.length})</TabsTrigger>
+                <TabsTrigger value="teaching">Teaching ({teachingProfiles.length})</TabsTrigger>
+                <TabsTrigger value="learning">Learning ({learningProfiles.length})</TabsTrigger>
               </TabsList>
               
               <TabsContent value="all" className="mt-4">
@@ -286,53 +341,39 @@ const ExploreSkills = () => {
               </TabsContent>
               
               <TabsContent value="teaching" className="mt-4">
-                {matchingProfiles.filter(p => selectedSkill && p.teachSkills.some(skill => 
-                  skill.toLowerCase() === selectedSkill.toLowerCase()
-                )).length === 0 ? (
+                {teachingProfiles.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">No profiles teaching this skill</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {matchingProfiles
-                      .filter(p => selectedSkill && p.teachSkills.some(skill => 
-                        skill.toLowerCase() === selectedSkill.toLowerCase()
-                      ))
-                      .map(profile => (
-                        <ProfileCard 
-                          key={profile.id} 
-                          profile={profile} 
-                          selectedSkill={selectedSkill || undefined} 
-                          currentUser={currentUser}
-                        />
-                      ))
-                    }
+                    {teachingProfiles.map(profile => (
+                      <ProfileCard 
+                        key={profile.id} 
+                        profile={profile} 
+                        selectedSkill={selectedSkill || undefined} 
+                        currentUser={currentUser}
+                      />
+                    ))}
                   </div>
                 )}
               </TabsContent>
               
               <TabsContent value="learning" className="mt-4">
-                {matchingProfiles.filter(p => selectedSkill && p.learnSkills.some(skill => 
-                  skill.toLowerCase() === selectedSkill.toLowerCase()
-                )).length === 0 ? (
+                {learningProfiles.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">No profiles learning this skill</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {matchingProfiles
-                      .filter(p => selectedSkill && p.learnSkills.some(skill => 
-                        skill.toLowerCase() === selectedSkill.toLowerCase()
-                      ))
-                      .map(profile => (
-                        <ProfileCard 
-                          key={profile.id} 
-                          profile={profile} 
-                          selectedSkill={selectedSkill || undefined} 
-                          currentUser={currentUser}
-                        />
-                      ))
-                    }
+                    {learningProfiles.map(profile => (
+                      <ProfileCard 
+                        key={profile.id} 
+                        profile={profile} 
+                        selectedSkill={selectedSkill || undefined} 
+                        currentUser={currentUser}
+                      />
+                    ))}
                   </div>
                 )}
               </TabsContent>
