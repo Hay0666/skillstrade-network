@@ -74,8 +74,14 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, selectedSkill, curre
     ? profile.ratings.reduce((sum, rating) => sum + rating.rating, 0) / profile.ratings.length
     : 0;
   
-  const isTeaching = selectedSkill ? profile.teachSkills.includes(selectedSkill) : false;
-  const isLearning = selectedSkill ? profile.learnSkills.includes(selectedSkill) : false;
+  // Check if the user teaches or learns the selected skill
+  const isTeaching = selectedSkill 
+    ? profile.teachSkills.some(skill => skill.toLowerCase() === selectedSkill.toLowerCase())
+    : false;
+    
+  const isLearning = selectedSkill 
+    ? profile.learnSkills.some(skill => skill.toLowerCase() === selectedSkill.toLowerCase())
+    : false;
   
   return (
     <Card className="h-full flex flex-col">

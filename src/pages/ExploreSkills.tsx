@@ -66,15 +66,26 @@ const ExploreSkills = () => {
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
-      setFilteredSkills(POPULAR_SKILLS);
+      // If category is selected, still filter by category
+      if (selectedCategory) {
+        const skillsInCategory = POPULAR_SKILLS.filter(skill => skill.category === selectedCategory);
+        setFilteredSkills(skillsInCategory);
+      } else {
+        setFilteredSkills(POPULAR_SKILLS);
+      }
     } else {
       const query = searchQuery.toLowerCase();
-      const results = POPULAR_SKILLS.filter(
+      // If category is selected, filter within that category
+      const baseSkills = selectedCategory 
+        ? POPULAR_SKILLS.filter(skill => skill.category === selectedCategory)
+        : POPULAR_SKILLS;
+        
+      const results = baseSkills.filter(
         skill => skill.name.toLowerCase().includes(query) || skill.category.toLowerCase().includes(query)
       );
       setFilteredSkills(results);
     }
-  }, [searchQuery]);
+  }, [searchQuery, selectedCategory]);
 
   const handleCategoryClick = (categoryName: string) => {
     setSelectedCategory(categoryName);
@@ -87,11 +98,15 @@ const ExploreSkills = () => {
     
     // Find profiles that teach or learn the selected skill
     const teaching = allProfiles.filter(profile => 
-      profile.teachSkills.includes(skillName) && profile.id !== currentUser?.id
+      profile.teachSkills.some(skill => 
+        skill.toLowerCase() === skillName.toLowerCase()
+      ) && profile.id !== currentUser?.id
     );
     
     const learning = allProfiles.filter(profile => 
-      profile.learnSkills.includes(skillName) && 
+      profile.learnSkills.some(skill => 
+        skill.toLowerCase() === skillName.toLowerCase()
+      ) && 
       !teaching.some(p => p.id === profile.id) && 
       profile.id !== currentUser?.id
     );
@@ -157,6 +172,19 @@ const ExploreSkills = () => {
         <div className="mb-10">
           <h2 className="text-2xl font-bold mb-4">
             {selectedCategory ? `${selectedCategory} Skills` : 'Popular Skills'}
+            {selectedCategory && (
+              <Button 
+                variant="ghost" 
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setFilteredSkills(POPULAR_SKILLS);
+                  setSearchQuery('');
+                }}
+                className="ml-2 text-sm"
+              >
+                Clear filter
+              </Button>
+            )}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredSkills.map((skill) => (
@@ -234,14 +262,18 @@ const ExploreSkills = () => {
               </TabsContent>
               
               <TabsContent value="teaching" className="mt-4">
-                {matchingProfiles.filter(p => selectedSkill && p.teachSkills.includes(selectedSkill)).length === 0 ? (
+                {matchingProfiles.filter(p => selectedSkill && p.teachSkills.some(skill => 
+                  skill.toLowerCase() === selectedSkill.toLowerCase()
+                )).length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">No profiles teaching this skill</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {matchingProfiles
-                      .filter(p => selectedSkill && p.teachSkills.includes(selectedSkill))
+                      .filter(p => selectedSkill && p.teachSkills.some(skill => 
+                        skill.toLowerCase() === selectedSkill.toLowerCase()
+                      ))
                       .map(profile => (
                         <ProfileCard 
                           key={profile.id} 
@@ -256,14 +288,18 @@ const ExploreSkills = () => {
               </TabsContent>
               
               <TabsContent value="learning" className="mt-4">
-                {matchingProfiles.filter(p => selectedSkill && p.learnSkills.includes(selectedSkill)).length === 0 ? (
+                {matchingProfiles.filter(p => selectedSkill && p.learnSkills.some(skill => 
+                  skill.toLowerCase() === selectedSkill.toLowerCase()
+                )).length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">No profiles learning this skill</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {matchingProfiles
-                      .filter(p => selectedSkill && p.learnSkills.includes(selectedSkill))
+                      .filter(p => selectedSkill && p.learnSkills.some(skill => 
+                        skill.toLowerCase() === selectedSkill.toLowerCase()
+                      ))
                       .map(profile => (
                         <ProfileCard 
                           key={profile.id} 
