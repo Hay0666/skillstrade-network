@@ -19,6 +19,10 @@ const Dashboard = () => {
     teachSkills: string[];
     learnSkills: string[];
     profilePicture?: string;
+    subscription?: {
+      planId: string;
+      status: 'free' | 'active' | 'canceled' | 'expired' | 'trial';
+    };
   } | null>(null);
   const [topMatches, setTopMatches] = useState<UserMatch[]>([]);
 
@@ -66,6 +70,10 @@ const Dashboard = () => {
     );
   }
 
+  // Get subscription status
+  const subscriptionStatus = userData?.subscription?.status || 'free';
+  const isPremium = subscriptionStatus === 'active';
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -76,6 +84,31 @@ const Dashboard = () => {
             Your skill exchange journey continues here
           </p>
         </div>
+
+        {/* Subscription Banner */}
+        <Card className="mb-8 border-2 border-primary/10">
+          <CardContent className="pt-6 pb-6">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div>
+                <h3 className="text-lg font-medium mb-1">
+                  {isPremium ? 'Premium Plan Active' : 'Upgrade to Premium'}
+                </h3>
+                <p className="text-muted-foreground">
+                  {isPremium 
+                    ? 'Enjoy unlimited messaging and premium features' 
+                    : 'Get unlimited messaging and unlock more features'}
+                </p>
+              </div>
+              <Button 
+                onClick={() => navigate('/subscription')}
+                className="mt-4 md:mt-0"
+                variant={isPremium ? "outline" : "default"}
+              >
+                {isPremium ? 'Manage Subscription' : 'Upgrade Now'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
           <Card>

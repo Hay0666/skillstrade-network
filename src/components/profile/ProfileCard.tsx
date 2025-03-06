@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, MessageCircle, UserPlus } from 'lucide-react';
+import { Star, MessageCircle, UserPlus, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { startConversation } from '@/utils/chatUtils';
@@ -47,6 +47,20 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, selectedSkill, curre
       toast.error('Please sign in to contact users');
       navigate('/auth?mode=login');
       return;
+    }
+    
+    const isPremium = currentUser.subscription?.status === 'active';
+    
+    // In a real app, we'd check if the user has reached their message limit
+    if (!isPremium) {
+      // For demo purposes, let's just show a message about upgrade
+      toast.error('Free users can only message a limited number of users. Upgrade for unlimited messaging!', {
+        action: {
+          label: 'Upgrade',
+          onClick: () => navigate('/subscription')
+        }
+      });
+      // Still allow them to start the conversation in this demo
     }
     
     const conversationId = startConversation(currentUser, profile);
@@ -109,6 +123,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, selectedSkill, curre
   const matchingTeachSkill = selectedSkill ? findMatchingSkill(profile.teachSkills, selectedSkill) : null;
   const matchingLearnSkill = selectedSkill ? findMatchingSkill(profile.learnSkills, selectedSkill) : null;
   
+  const isPremiumProfile = profile.subscription?.status === 'active';
+  
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
@@ -121,7 +137,15 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, selectedSkill, curre
             )}
           </Avatar>
           <div className="flex-1">
-            <CardTitle className="text-lg">{profile.name}</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-lg">{profile.name}</CardTitle>
+              {isPremiumProfile && (
+                <Badge variant="secondary" className="bg-amber-100 text-amber-800 flex items-center gap-1">
+                  <Crown className="h-3 w-3" />
+                  <span>Premium</span>
+                </Badge>
+              )}
+            </div>
             {averageRating > 0 && (
               <div className="flex items-center mt-1">
                 <div className="flex mr-1">
