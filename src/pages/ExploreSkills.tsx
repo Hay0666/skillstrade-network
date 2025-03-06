@@ -18,6 +18,7 @@ import { Search, ArrowLeft } from 'lucide-react';
 import ProfileCard from '@/components/profile/ProfileCard';
 import { User } from '@/types/user';
 import { sampleProfiles } from '@/utils/sampleProfiles';
+import { loadSampleProfiles } from '@/utils/loadSampleProfiles';
 
 // Sample skill categories and popular skills for demonstration
 const SKILL_CATEGORIES = [
@@ -49,13 +50,16 @@ const ExploreSkills = () => {
   const [allProfiles, setAllProfiles] = useState<User[]>([]);
 
   useEffect(() => {
+    // Load sample profiles into localStorage if not already present
+    loadSampleProfiles(false);
+    
     // Load the current user from localStorage
     const storedUser = localStorage.getItem('skillswap_user');
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
 
-    // Load all profiles from localStorage or use sample profiles
+    // Load all profiles from localStorage or use sample profiles directly
     const usersString = localStorage.getItem('skillswap_users');
     if (usersString) {
       setAllProfiles(JSON.parse(usersString));
@@ -87,6 +91,15 @@ const ExploreSkills = () => {
     }
   }, [searchQuery, selectedCategory]);
 
+  // Debugging function to check skills in profiles
+  const debugProfileSkills = () => {
+    console.log('All profiles:', allProfiles);
+    allProfiles.forEach(profile => {
+      console.log(`Profile ${profile.name} teaches: ${profile.teachSkills.join(', ')}`);
+      console.log(`Profile ${profile.name} learns: ${profile.learnSkills.join(', ')}`);
+    });
+  };
+
   const handleCategoryClick = (categoryName: string) => {
     setSelectedCategory(categoryName);
     const skillsInCategory = POPULAR_SKILLS.filter(skill => skill.category === categoryName);
@@ -96,20 +109,31 @@ const ExploreSkills = () => {
   const handleSkillClick = (skillName: string) => {
     setSelectedSkill(skillName);
     
+    // Debug log to check profiles and the selected skill
+    console.log(`Finding profiles for skill: ${skillName}`);
+    debugProfileSkills();
+    
     // Find profiles that teach or learn the selected skill
+    // Using simple string comparison to ensure matches work
     const teaching = allProfiles.filter(profile => 
       profile.teachSkills.some(skill => 
-        skill.toLowerCase() === skillName.toLowerCase()
+        skill.toLowerCase() === skillName.toLowerCase() ||
+        skillName.toLowerCase().includes(skill.toLowerCase()) ||
+        skill.toLowerCase().includes(skillName.toLowerCase())
       ) && profile.id !== currentUser?.id
     );
     
     const learning = allProfiles.filter(profile => 
       profile.learnSkills.some(skill => 
-        skill.toLowerCase() === skillName.toLowerCase()
+        skill.toLowerCase() === skillName.toLowerCase() ||
+        skillName.toLowerCase().includes(skill.toLowerCase()) ||
+        skill.toLowerCase().includes(skillName.toLowerCase())
       ) && 
       !teaching.some(p => p.id === profile.id) && 
       profile.id !== currentUser?.id
     );
+    
+    console.log(`Found ${teaching.length} teachers and ${learning.length} learners`);
     
     setMatchingProfiles([...teaching, ...learning]);
     setIsDialogOpen(true);

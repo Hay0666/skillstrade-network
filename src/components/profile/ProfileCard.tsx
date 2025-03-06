@@ -74,14 +74,45 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, selectedSkill, curre
     ? profile.ratings.reduce((sum, rating) => sum + rating.rating, 0) / profile.ratings.length
     : 0;
   
-  // Check if the user teaches or learns the selected skill
+  // Check if the user teaches or learns the selected skill with more flexible matching
   const isTeaching = selectedSkill 
-    ? profile.teachSkills.some(skill => skill.toLowerCase() === selectedSkill.toLowerCase())
+    ? profile.teachSkills.some(skill => 
+        skill.toLowerCase() === selectedSkill.toLowerCase() ||
+        selectedSkill.toLowerCase().includes(skill.toLowerCase()) ||
+        skill.toLowerCase().includes(selectedSkill.toLowerCase())
+      )
     : false;
     
   const isLearning = selectedSkill 
-    ? profile.learnSkills.some(skill => skill.toLowerCase() === selectedSkill.toLowerCase())
+    ? profile.learnSkills.some(skill => 
+        skill.toLowerCase() === selectedSkill.toLowerCase() ||
+        selectedSkill.toLowerCase().includes(skill.toLowerCase()) ||
+        skill.toLowerCase().includes(selectedSkill.toLowerCase())
+      )
     : false;
+  
+  // Function to find the matching skill
+  const findMatchingTeachSkill = () => {
+    if (!selectedSkill) return null;
+    return profile.teachSkills.find(skill => 
+      skill.toLowerCase() === selectedSkill.toLowerCase() ||
+      selectedSkill.toLowerCase().includes(skill.toLowerCase()) ||
+      skill.toLowerCase().includes(selectedSkill.toLowerCase())
+    );
+  };
+  
+  const findMatchingLearnSkill = () => {
+    if (!selectedSkill) return null;
+    return profile.learnSkills.find(skill => 
+      skill.toLowerCase() === selectedSkill.toLowerCase() ||
+      selectedSkill.toLowerCase().includes(skill.toLowerCase()) ||
+      skill.toLowerCase().includes(selectedSkill.toLowerCase())
+    );
+  };
+  
+  // Get the actual skills that match
+  const matchingTeachSkill = findMatchingTeachSkill();
+  const matchingLearnSkill = findMatchingLearnSkill();
   
   return (
     <Card className="h-full flex flex-col">
@@ -120,12 +151,12 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, selectedSkill, curre
           <div className="mt-3 space-y-1">
             {isTeaching && (
               <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
-                Teaching {selectedSkill}
+                Teaching {matchingTeachSkill || selectedSkill}
               </Badge>
             )}
             {isLearning && (
               <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-                Learning {selectedSkill}
+                Learning {matchingLearnSkill || selectedSkill}
               </Badge>
             )}
           </div>
