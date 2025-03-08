@@ -51,8 +51,8 @@ const Hero = () => {
       </div>
       <div className="mt-16 flex justify-center">
         <img
-          src="/placeholder.svg"
-          alt="SkillSwap Platform"
+          src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200&auto=format&fit=crop"
+          alt="People collaborating and learning together"
           className="w-full max-w-4xl rounded-lg shadow-lg border"
           height="600"
           width="1200"
