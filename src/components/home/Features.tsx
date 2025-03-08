@@ -1,5 +1,6 @@
 
 import { CheckCircle, Users, Calendar, Award, MessageSquare, Brain } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
 
 const Features = () => {
   const features = [
@@ -42,10 +43,12 @@ const Features = () => {
   ];
 
   return (
-    <section className="py-24 bg-secondary/40">
+    <section className="py-24 bg-gradient-to-b from-secondary/40 to-background">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in">
-          <h2 className="text-3xl font-bold tracking-tight">Everything you need for effective skill exchanges</h2>
+          <h2 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+            Everything you need for effective skill exchanges
+          </h2>
           <p className="mt-4 text-xl text-muted-foreground">
             Our platform provides all the tools necessary to find perfect learning partners, schedule sessions, and track your progress.
           </p>
@@ -53,28 +56,30 @@ const Features = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <div 
+            <Card 
               key={index}
-              className="relative group"
+              className="group overflow-hidden border-none bg-background/50 backdrop-blur-sm shadow-md hover:shadow-xl transition-all duration-500 ease-in-out"
             >
-              <div className="relative z-10 h-full bg-background rounded-xl shadow-sm border flex flex-col transition-all duration-300 group-hover:shadow-md group-hover:scale-[1.01] overflow-hidden">
-                <div className="h-40 overflow-hidden">
-                  <img 
-                    src={feature.image} 
-                    alt={feature.title} 
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-6">
-                  <div className="p-3 rounded-full bg-primary/10 w-fit mb-5">
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-xl font-medium mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground flex-1">{feature.description}</p>
-                </div>
+              <div className="h-48 overflow-hidden">
+                <img 
+                  src={feature.image} 
+                  alt={feature.title} 
+                  className="w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110 group-hover:brightness-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent opacity-70"></div>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-primary/0 to-primary/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
-            </div>
+              
+              <CardContent className="relative pt-6 z-10 -mt-12 bg-gradient-to-b from-transparent to-background/95 backdrop-blur-sm">
+                <div className="p-3 rounded-full bg-primary/10 w-fit mb-5 shadow-inner border border-primary/20">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
+              </CardContent>
+              
+              {/* Decorative gradient */}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/40 via-primary/60 to-primary/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            </Card>
           ))}
         </div>
       </div>
