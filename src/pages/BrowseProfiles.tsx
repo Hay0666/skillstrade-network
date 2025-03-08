@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -11,6 +12,16 @@ import { User } from '@/types/user';
 import { Search, Shuffle, Heart, ArrowRight } from 'lucide-react';
 import { loadSampleProfiles } from '@/utils/loadSampleProfiles';
 import { findSkillMatches } from '@/utils/matchingSystem';
+
+// Sample profile image URLs for avatar defaults
+const profileImages = [
+  "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=200&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=200&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=200&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop",
+];
 
 const BrowseProfiles = () => {
   const navigate = useNavigate();
@@ -37,7 +48,22 @@ const BrowseProfiles = () => {
       const usersString = localStorage.getItem('skillswap_users');
       if (usersString) {
         const allUsers: User[] = JSON.parse(usersString);
-        const otherUsers = allUsers.filter(user => user.id !== parsedUser.id);
+        
+        // Add random profile images to users that don't have one
+        const enhancedUsers = allUsers.map(user => {
+          if (!user.profilePicture) {
+            return {
+              ...user,
+              profilePicture: profileImages[Math.floor(Math.random() * profileImages.length)]
+            };
+          }
+          return user;
+        });
+        
+        // Store the enhanced users back
+        localStorage.setItem('skillswap_users', JSON.stringify(enhancedUsers));
+        
+        const otherUsers = enhancedUsers.filter(user => user.id !== parsedUser.id);
         setProfiles(otherUsers);
         setFilteredProfiles(otherUsers);
       } else {
@@ -89,7 +115,22 @@ const BrowseProfiles = () => {
     const usersString = localStorage.getItem('skillswap_users');
     if (usersString && currentUser) {
       const allUsers: User[] = JSON.parse(usersString);
-      const otherUsers = allUsers.filter(user => user.id !== currentUser.id);
+      
+      // Add random profile images to sample users that don't have one
+      const enhancedUsers = allUsers.map(user => {
+        if (!user.profilePicture) {
+          return {
+            ...user,
+            profilePicture: profileImages[Math.floor(Math.random() * profileImages.length)]
+          };
+        }
+        return user;
+      });
+      
+      // Store the enhanced users back
+      localStorage.setItem('skillswap_users', JSON.stringify(enhancedUsers));
+      
+      const otherUsers = enhancedUsers.filter(user => user.id !== currentUser.id);
       setProfiles(otherUsers);
       setFilteredProfiles(otherUsers);
     }
@@ -180,7 +221,7 @@ const BrowseProfiles = () => {
               <Card key={profile.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
                   <div className="flex items-center space-x-4">
-                    <Avatar className="h-12 w-12">
+                    <Avatar className="h-12 w-12 border-2 border-primary/20">
                       {profile.profilePicture ? (
                         <AvatarImage src={profile.profilePicture} alt={profile.name} />
                       ) : (

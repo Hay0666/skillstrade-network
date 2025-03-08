@@ -9,8 +9,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { User, UserRating } from '@/types/user';
-import { ArrowLeft, Star, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Star, MessageCircle, Clock, MapPin, Briefcase } from 'lucide-react';
 import { startConversation } from '@/utils/chatUtils';
+
+// Sample background patterns
+const backgroundPatterns = [
+  "url(\"data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23bdbdbd' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E\")",
+  "url(\"data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='24' viewBox='0 0 88 24'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='autumn' fill='%23b87a65' fill-opacity='0.05'%3E%3Cpath d='M10 0l30 15 2 1V2.18A10 10 0 0 0 41.76 0H39.7a8 8 0 0 1 .3 2.18v10.58L14.47 0H10zm31.76 24a10 10 0 0 0-5.29-6.76L4 1 2 0v13.82a10 10 0 0 0 5.53 8.94L10 24h4.47l-6.05-3.02A8 8 0 0 1 4 13.82V3.24l31.58 15.78A8 8 0 0 1 39.7 24h2.06zM78 24l2.47-1.24A10 10 0 0 0 86 13.82V0l-2 1-32.47 16.24A10 10 0 0 0 46.24 24h2.06a8 8 0 0 1 4.12-4.98L84 3.24v10.58a8 8 0 0 1-4.42 7.16L73.53 24H78zm0-24L48 15l-2 1V2.18A10 10 0 0 1 46.24 0h2.06a8 8 0 0 0-.3 2.18v10.58L73.53 0H78z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"
+];
 
 const ProfileView = () => {
   const { userId } = useParams();
@@ -19,8 +26,12 @@ const ProfileView = () => {
   const [profileData, setProfileData] = useState<User | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [averageRating, setAverageRating] = useState<number | null>(null);
+  const [backgroundPattern, setBackgroundPattern] = useState("");
 
   useEffect(() => {
+    // Set a random background pattern
+    setBackgroundPattern(backgroundPatterns[Math.floor(Math.random() * backgroundPatterns.length)]);
+    
     const loadUserData = () => {
       // Check if current user is logged in
       const storedUser = localStorage.getItem('skillswap_user');
@@ -130,7 +141,10 @@ const ProfileView = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-8 mt-20">
+      <div className="h-48 w-full relative" style={{ background: backgroundPattern }}>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background"></div>
+      </div>
+      <main className="flex-1 container mx-auto px-4 py-8 mt-[-100px] relative z-10">
         <Button 
           onClick={handleGoBack} 
           variant="ghost" 
@@ -145,7 +159,7 @@ const ProfileView = () => {
           <Card className="lg:col-span-1">
             <CardHeader className="text-center pb-2">
               <div className="flex flex-col items-center">
-                <Avatar className="h-24 w-24 mb-4">
+                <Avatar className="h-24 w-24 mb-4 border-4 border-background shadow-lg">
                   {profileData.profilePicture ? (
                     <AvatarImage src={profileData.profilePicture} alt={profileData.name} />
                   ) : (
@@ -163,6 +177,22 @@ const ProfileView = () => {
                     </span>
                   </div>
                 )}
+
+                {/* Additional profile details */}
+                <div className="w-full mt-4 flex flex-col gap-2">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Clock size={15} className="mr-2" />
+                    <span>Member since May 2023</span>
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <MapPin size={15} className="mr-2" />
+                    <span>New York, USA</span>
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Briefcase size={15} className="mr-2" />
+                    <span>Professional Educator</span>
+                  </div>
+                </div>
               </div>
             </CardHeader>
             <CardContent>

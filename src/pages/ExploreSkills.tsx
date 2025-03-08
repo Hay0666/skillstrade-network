@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -20,17 +19,24 @@ import { User } from '@/types/user';
 import { sampleProfiles } from '@/utils/sampleProfiles';
 import { loadSampleProfiles } from '@/utils/loadSampleProfiles';
 
-// Sample skill categories and popular skills for demonstration
+const categoryImages = {
+  "Technology": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop",
+  "Arts & Crafts": "https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?q=80&w=600&auto=format&fit=crop",
+  "Languages": "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600&auto=format&fit=crop",
+  "Music": "https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=600&auto=format&fit=crop",
+  "Cooking": "https://images.unsplash.com/photo-1506368249639-73a05d6f6488?q=80&w=600&auto=format&fit=crop",
+  "Sports": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=600&auto=format&fit=crop",
+};
+
 const SKILL_CATEGORIES = [
-  { id: 1, name: 'Technology', count: 156 },
-  { id: 2, name: 'Arts & Crafts', count: 94 },
-  { id: 3, name: 'Languages', count: 78 },
-  { id: 4, name: 'Music', count: 112 },
-  { id: 5, name: 'Cooking', count: 89 },
-  { id: 6, name: 'Sports', count: 67 },
+  { id: 1, name: 'Technology', count: 156, image: categoryImages["Technology"] },
+  { id: 2, name: 'Arts & Crafts', count: 94, image: categoryImages["Arts & Crafts"] },
+  { id: 3, name: 'Languages', count: 78, image: categoryImages["Languages"] },
+  { id: 4, name: 'Music', count: 112, image: categoryImages["Music"] },
+  { id: 5, name: 'Cooking', count: 89, image: categoryImages["Cooking"] },
+  { id: 6, name: 'Sports', count: 67, image: categoryImages["Sports"] },
 ];
 
-// Update to include dynamic counts of teaching users
 const ExploreSkills = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredSkills, setFilteredSkills] = useState<Array<{id: number, name: string, category: string, users: number}>>([]);
@@ -45,16 +51,11 @@ const ExploreSkills = () => {
   const [popularSkills, setPopularSkills] = useState<Array<{id: number, name: string, category: string, users: number}>>([]);
 
   useEffect(() => {
-    // Load sample profiles into localStorage if not already present
     loadSampleProfiles(false);
-    
-    // Load the current user from localStorage
     const storedUser = localStorage.getItem('skillswap_user');
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
-
-    // Load all profiles from localStorage or use sample profiles directly
     const usersString = localStorage.getItem('skillswap_users');
     let profiles: User[] = [];
     if (usersString) {
@@ -64,10 +65,7 @@ const ExploreSkills = () => {
     }
     setAllProfiles(profiles);
 
-    // Generate dynamic popular skills based on actual profiles
     const skillCountMap = new Map<string, {category: string, count: number}>();
-    
-    // First, establish the initial fixed popular skills with 0 counts
     const initialSkills = [
       { key: 'JavaScript Programming', category: 'Technology' },
       { key: 'Watercolor Painting', category: 'Arts & Crafts' },
@@ -81,12 +79,9 @@ const ExploreSkills = () => {
       skillCountMap.set(skill.key, { category: skill.category, count: 0 });
     });
     
-    // Count actual teaching profiles for each skill
     profiles.forEach(profile => {
       profile.teachSkills.forEach(skill => {
-        // Match skill to one of our categories if possible
-        let category = 'Technology'; // Default category
-        
+        let category = 'Technology';
         if (skill.toLowerCase().includes('paint') || skill.toLowerCase().includes('craft') || skill.toLowerCase().includes('art')) {
           category = 'Arts & Crafts';
         } else if (skill.toLowerCase().includes('language') || skill.toLowerCase().includes('spanish') || skill.toLowerCase().includes('french')) {
@@ -99,7 +94,6 @@ const ExploreSkills = () => {
           category = 'Sports';
         }
         
-        // Try to map to an existing skill
         let mapped = false;
         for (const [key, value] of skillCountMap.entries()) {
           if (key.toLowerCase().includes(skill.toLowerCase()) || skill.toLowerCase().includes(key.toLowerCase())) {
@@ -109,14 +103,12 @@ const ExploreSkills = () => {
           }
         }
         
-        // If not mapped to existing, add new skill
         if (!mapped) {
           skillCountMap.set(skill, { category, count: 1 });
         }
       });
     });
     
-    // Convert map to array and sort by count
     const dynamicSkills = Array.from(skillCountMap.entries())
       .map(([name, data], index) => ({
         id: index + 1,
@@ -126,7 +118,6 @@ const ExploreSkills = () => {
       }))
       .sort((a, b) => b.users - a.users);
     
-    // Take top skills or all if less than 6
     const topSkills = dynamicSkills.slice(0, Math.min(dynamicSkills.length, 6));
     setPopularSkills(topSkills);
     setFilteredSkills(topSkills);
@@ -134,7 +125,6 @@ const ExploreSkills = () => {
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
-      // If category is selected, still filter by category
       if (selectedCategory) {
         const skillsInCategory = popularSkills.filter(skill => skill.category === selectedCategory);
         setFilteredSkills(skillsInCategory);
@@ -143,7 +133,6 @@ const ExploreSkills = () => {
       }
     } else {
       const query = searchQuery.toLowerCase();
-      // If category is selected, filter within that category
       const baseSkills = selectedCategory 
         ? popularSkills.filter(skill => skill.category === selectedCategory)
         : popularSkills;
@@ -166,7 +155,6 @@ const ExploreSkills = () => {
     
     console.log(`Finding profiles for skill: ${skillName}`);
     
-    // Get the profiles that teach the selected skill
     const teaching = allProfiles.filter(profile => 
       profile.teachSkills.some(skill => 
         skill.toLowerCase() === skillName.toLowerCase() ||
@@ -175,7 +163,6 @@ const ExploreSkills = () => {
       ) && profile.id !== currentUser?.id
     );
     
-    // Get the profiles that learn the selected skill
     const learning = allProfiles.filter(profile => 
       profile.learnSkills.some(skill => 
         skill.toLowerCase() === skillName.toLowerCase() ||
@@ -210,7 +197,6 @@ const ExploreSkills = () => {
           </p>
         </div>
 
-        {/* Search Bar */}
         <div className="relative mb-8">
           <div className="relative">
             <Input
@@ -223,12 +209,18 @@ const ExploreSkills = () => {
           </div>
         </div>
 
-        {/* Categories */}
         <div className="mb-10">
           <h2 className="text-2xl font-bold mb-4">Skill Categories</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {SKILL_CATEGORIES.map((category) => (
-              <Card key={category.id}>
+              <Card key={category.id} className="overflow-hidden">
+                <div className="h-36 overflow-hidden">
+                  <img 
+                    src={category.image} 
+                    alt={category.name} 
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">{category.name}</CardTitle>
                 </CardHeader>
@@ -247,7 +239,6 @@ const ExploreSkills = () => {
           </div>
         </div>
 
-        {/* Popular Skills or Filtered Skills */}
         <div className="mb-10">
           <h2 className="text-2xl font-bold mb-4">
             {selectedCategory ? `${selectedCategory} Skills` : 'Popular Skills'}
@@ -267,7 +258,17 @@ const ExploreSkills = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredSkills.map((skill) => (
-              <Card key={skill.id}>
+              <Card key={skill.id} className="overflow-hidden">
+                <div className="h-32 overflow-hidden bg-gradient-to-r from-primary/5 to-secondary/5 flex items-center justify-center">
+                  <img 
+                    src={categoryImages[skill.category as keyof typeof categoryImages]} 
+                    alt={skill.name} 
+                    className="w-full h-full object-cover opacity-75 transition-all duration-300 hover:opacity-100"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <h3 className="text-xl font-bold text-white bg-black/30 px-4 py-2 rounded-lg shadow-lg">{skill.name}</h3>
+                  </div>
+                </div>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">{skill.name}</CardTitle>
                   <CardDescription>Category: {skill.category}</CardDescription>
@@ -294,7 +295,6 @@ const ExploreSkills = () => {
           </div>
         </div>
 
-        {/* Skill Profiles Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
             <DialogHeader>
@@ -381,7 +381,6 @@ const ExploreSkills = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Featured Image */}
         <div className="rounded-lg overflow-hidden mb-10">
           <img 
             src="https://images.unsplash.com/photo-1519389950473-47ba0277781c" 

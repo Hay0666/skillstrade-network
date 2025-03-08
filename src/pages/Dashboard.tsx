@@ -9,6 +9,14 @@ import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { UserMatch } from '@/types/user';
 import { findSkillMatches } from '@/utils/matchingSystem';
+import { Award, BookOpen, Users } from 'lucide-react';
+
+// Sample profile images for matches that don't have one
+const profileImages = [
+  "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=200&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=200&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&auto=format&fit=crop",
+];
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -43,7 +51,19 @@ const Dashboard = () => {
       
       // Find matches for the current user and show top 3
       const userMatches = findSkillMatches(parsedUser);
-      setTopMatches(userMatches.slice(0, 3));
+      
+      // Add profile pictures to matches if they don't have one
+      const enhancedMatches = userMatches.map((match, index) => {
+        if (!match.profilePicture) {
+          return {
+            ...match,
+            profilePicture: profileImages[index % profileImages.length]
+          };
+        }
+        return match;
+      });
+      
+      setTopMatches(enhancedMatches.slice(0, 3));
     } catch (error) {
       console.error('Failed to parse user data:', error);
       localStorage.removeItem('skillswap_user');
@@ -85,36 +105,52 @@ const Dashboard = () => {
           </p>
         </div>
 
-        {/* Subscription Banner */}
-        <Card className="mb-8 border-2 border-primary/10">
-          <CardContent className="pt-6 pb-6">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div>
-                <h3 className="text-lg font-medium mb-1">
-                  {isPremium ? 'Premium Plan Active' : 'Upgrade to Premium'}
-                </h3>
-                <p className="text-muted-foreground">
-                  {isPremium 
-                    ? 'Enjoy unlimited messaging and premium features' 
-                    : 'Get unlimited messaging and unlock more features'}
-                </p>
-              </div>
-              <Button 
-                onClick={() => navigate('/subscription')}
-                className="mt-4 md:mt-0"
-                variant={isPremium ? "outline" : "default"}
-              >
-                {isPremium ? 'Manage Subscription' : 'Upgrade Now'}
-              </Button>
+        {/* Subscription Banner with Image */}
+        <Card className="mb-8 border-2 border-primary/10 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            <div className="hidden md:block">
+              <img 
+                src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=600&auto=format&fit=crop" 
+                alt="Premium subscription" 
+                className="h-full w-full object-cover"
+              />
             </div>
-          </CardContent>
+            <div className="md:col-span-2">
+              <CardContent className="pt-6 pb-6">
+                <div className="flex flex-col md:flex-row justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-medium mb-1">
+                      {isPremium ? 'Premium Plan Active' : 'Upgrade to Premium'}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {isPremium 
+                        ? 'Enjoy unlimited messaging and premium features' 
+                        : 'Get unlimited messaging and unlock more features'}
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => navigate('/subscription')}
+                    className="mt-4 md:mt-0"
+                    variant={isPremium ? "outline" : "default"}
+                  >
+                    {isPremium ? 'Manage Subscription' : 'Upgrade Now'}
+                  </Button>
+                </div>
+              </CardContent>
+            </div>
+          </div>
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
           <Card>
-            <CardHeader>
-              <CardTitle>Skills You Can Teach</CardTitle>
-              <CardDescription>Share your expertise with others</CardDescription>
+            <CardHeader className="flex flex-row items-center space-x-4 pb-2">
+              <div className="p-2 bg-primary/10 rounded-full">
+                <BookOpen className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Skills You Can Teach</CardTitle>
+                <CardDescription>Share your expertise with others</CardDescription>
+              </div>
             </CardHeader>
             <CardContent>
               {userData?.teachSkills && userData.teachSkills.length > 0 ? (
@@ -141,9 +177,14 @@ const Dashboard = () => {
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Skills You Want to Learn</CardTitle>
-              <CardDescription>Discover new abilities from others</CardDescription>
+            <CardHeader className="flex flex-row items-center space-x-4 pb-2">
+              <div className="p-2 bg-secondary/20 rounded-full">
+                <Award className="h-5 w-5 text-secondary" />
+              </div>
+              <div>
+                <CardTitle>Skills You Want to Learn</CardTitle>
+                <CardDescription>Discover new abilities from others</CardDescription>
+              </div>
             </CardHeader>
             <CardContent>
               {userData?.learnSkills && userData.learnSkills.length > 0 ? (
@@ -171,14 +212,19 @@ const Dashboard = () => {
         </div>
 
         <div className="mb-10">
-          <h2 className="text-2xl font-bold mb-4">Skill Matches</h2>
+          <div className="flex items-center mb-4">
+            <div className="p-2 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full mr-3">
+              <Users className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold">Skill Matches</h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {topMatches.length > 0 ? (
               topMatches.map((match) => (
                 <Card key={match.id} className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-2">
                     <div className="flex items-center space-x-3">
-                      <Avatar className="h-10 w-10">
+                      <Avatar className="h-10 w-10 border-2 border-primary/20">
                         {match.profilePicture ? (
                           <AvatarImage src={match.profilePicture} alt={match.name} />
                         ) : (
