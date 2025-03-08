@@ -32,7 +32,7 @@ const Features = () => {
       icon: <Award className="h-6 w-6 text-primary" />,
       title: "Recognition & Rewards",
       description: "Earn points, badges, and climb the leaderboard as you exchange skills and help others learn.",
-      image: "https://images.unsplash.com/photo-1567016526105-22da7c13adb6?q=80&w=800&auto=format&fit=crop"
+      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?q=80&w=800&auto=format&fit=crop"
     },
     {
       icon: <CheckCircle className="h-6 w-6 text-primary" />,
