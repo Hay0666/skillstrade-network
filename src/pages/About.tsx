@@ -7,6 +7,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 const About = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const userInfo = localStorage.getItem('skillswap_user');
+    if (userInfo) {
+      try {
+        setIsLoggedIn(true);
+      } catch (e) {
+        console.error('Error parsing user info:', e);
+        setIsLoggedIn(false);
+      }
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -119,8 +136,11 @@ const About = () => {
             Whether you want to teach your expertise or learn something new, Skill Swap offers a platform where knowledge flows freely and connections are made.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg">Sign Up Now</Button>
-            <Button variant="outline" size="lg">Learn More</Button>
+            {!isLoggedIn && (
+              <Button size="lg" asChild>
+                <Link to="/auth?mode=register">Sign Up Now</Link>
+              </Button>
+            )}
           </div>
         </div>
       </main>
