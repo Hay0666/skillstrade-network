@@ -1,69 +1,39 @@
-# Welcome to your Lovable project
+# Skill Exchange Platform
 
-## Project info
+## Overview
 
-**URL**: https://lovable.dev/projects/8caca262-81eb-4379-bb0c-89b06c1f3692
+This is a Skill Exchange Platform that connects users who want to teach and learn skills from each other. Users are automatically or manually matched based on their skills, learning preferences, and availability. The platform also features an AI chatbot, a messaging system, and paid subscription plans for enhanced functionality.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+User Profiles: Users can create and edit their profiles, including profile pictures, skills they can teach, skills they want to learn, learning formats, and available time slots.
 
-**Use Lovable**
+Matching System: Matches users based on shared skills (one user teaches, the other learns) and preferred learning methods.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8caca262-81eb-4379-bb0c-89b06c1f3692) and start prompting.
+Explore Skills & Profiles: Users can browse available skills and view all profiles related to a specific skill.
 
-Changes made via Lovable will be committed automatically to this repo.
+Messaging System: Allows users to communicate freely with reporting functionalities.
 
-**Use your preferred IDE**
+AI Chatbot: Provides guidance and answers about the platform based on keyword detection.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Paid Plans: Monthly and yearly subscription options with secure payment processing.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Navigation Fixes: Buttons like "Sign Up" or "Create Profile" are only shown to non-logged-in users.
 
-Follow these steps:
+Content Pages: Pages such as "About Us," "Careers," "Blog," "Contact," "Terms of Service," "Privacy Policy," and "Community" are fully functional.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Usage
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Sign up/Login to access the platform.
 
-# Step 3: Install the necessary dependencies.
-npm i
+Update your profile with your skills and preferences.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+Explore matches and connect with others.
 
-**Edit a file directly in GitHub**
+Chat with users and start learning.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Subscribe to premium for additional features.
 
-**Use GitHub Codespaces**
+## Contributing
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/8caca262-81eb-4379-bb0c-89b06c1f3692) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Feel free to submit pull requests or open issues to improve the platform.
