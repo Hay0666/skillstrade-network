@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bot, X, Send, ChevronDown, ChevronUp, Brain } from 'lucide-react';
+import { Bot, X, Send, ChevronDown, Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { findMatchingResponses } from '@/utils/chatbotUtils';
 
 interface Message {
   id: string;
@@ -68,9 +69,9 @@ const AIChatbot: React.FC<AIChatbotProps> = ({ userName, userSkills = [] }) => {
     setNewMessage('');
     setIsTyping(true);
     
-    // Simulate AI response delay (1-2 seconds)
+    // Generate AI response using rule-based system
     setTimeout(() => {
-      const aiResponse = generateAIResponse(newMessage, userSkills);
+      const aiResponse = findMatchingResponses(newMessage, userSkills);
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: aiResponse,
@@ -80,88 +81,12 @@ const AIChatbot: React.FC<AIChatbotProps> = ({ userName, userSkills = [] }) => {
       
       setMessages(prev => [...prev, aiMessage]);
       setIsTyping(false);
-    }, Math.random() * 1000 + 1000);
+    }, Math.random() * 1000 + 1000); // Simulate thinking time
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSendMessage();
-    }
-  };
-
-  // Simple AI response generation based on user message and skills
-  const generateAIResponse = (message: string, skills: string[]): string => {
-    const lowerMessage = message.toLowerCase();
-    
-    // Learning recommendations based on user skills
-    if (lowerMessage.includes('recommend') || lowerMessage.includes('suggestion') || lowerMessage.includes('what should i learn')) {
-      if (skills.length > 0) {
-        return `Based on your current skills (${skills.join(', ')}), you might want to explore complementary areas like ${getComplementarySkill(skills)}. Would you like me to suggest some resources?`;
-      } else {
-        return "I'd be happy to recommend learning paths! Could you share what skills you're currently interested in developing?";
-      }
-    }
-    
-    // Teaching tips
-    if (lowerMessage.includes('teach') || lowerMessage.includes('how to explain') || lowerMessage.includes('teaching tips')) {
-      return "When teaching others, remember the 'explain, demonstrate, practice, review' method. Start by explaining concepts simply, demonstrate with examples, let them practice, and review their progress. Would you like specific teaching strategies for a particular skill?";
-    }
-    
-    // Progress tracking
-    if (lowerMessage.includes('track') || lowerMessage.includes('progress') || lowerMessage.includes('improve')) {
-      return "Tracking your learning progress is key to improvement. I recommend setting specific, measurable goals and documenting your journey. SkillSwap's profile tools can help you visualize your growth. Would you like me to suggest some milestone tracking techniques?";
-    }
-
-    // Finding partners
-    if (lowerMessage.includes('partner') || lowerMessage.includes('find someone') || lowerMessage.includes('connect')) {
-      return "To find the perfect learning partner, make sure your profile clearly lists your skills and interests. Use the 'Browse Profiles' page to find people with complementary skills. When reaching out, be specific about what you hope to learn and teach!";
-    }
-    
-    // General responses
-    const generalResponses = [
-      "I'm here to help with your skill development. Could you tell me more about what you'd like to learn or teach?",
-      "Learning is most effective when it's personalized. What specific skills are you focusing on right now?",
-      "The SkillSwap community offers great opportunities for both teaching and learning. How can I help you make the most of it?",
-      "Remember, teaching others is one of the best ways to reinforce your own knowledge. Have you considered what skills you could share?"
-    ];
-    
-    return generalResponses[Math.floor(Math.random() * generalResponses.length)];
-  };
-
-  // Helper function to suggest complementary skills
-  const getComplementarySkill = (skills: string[]): string => {
-    const skillPairs: Record<string, string[]> = {
-      'programming': ['UI/UX design', 'project management', 'technical writing'],
-      'design': ['front-end development', 'user research', 'marketing'],
-      'marketing': ['data analysis', 'copywriting', 'graphic design'],
-      'language': ['cultural studies', 'translation', 'public speaking'],
-      'music': ['audio production', 'music theory', 'performance techniques'],
-      'writing': ['editing', 'storytelling', 'content marketing'],
-      'cooking': ['nutrition', 'food photography', 'menu planning']
-    };
-    
-    // Default complementary skills if no match found
-    const defaultSkills = ['public speaking', 'project management', 'critical thinking'];
-    
-    // Find matching complementary skills based on user's skills
-    let complementarySkills: string[] = [];
-    skills.forEach(skill => {
-      // Check if any key in skillPairs partially matches the user's skill
-      Object.keys(skillPairs).forEach(key => {
-        if (skill.toLowerCase().includes(key) || key.includes(skill.toLowerCase())) {
-          complementarySkills = [...complementarySkills, ...skillPairs[key]];
-        }
-      });
-    });
-    
-    // Return random complementary skills, or default if none found
-    if (complementarySkills.length > 0) {
-      const randomSkills = complementarySkills
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 2);
-      return randomSkills.join(' and ');
-    } else {
-      return defaultSkills[Math.floor(Math.random() * defaultSkills.length)];
     }
   };
 
