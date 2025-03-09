@@ -1,12 +1,39 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/home/Hero';
 import Features from '@/components/home/Features';
 import HowItWorks from '@/components/home/HowItWorks';
+import AIChatbot from '@/components/chat/AIChatbot';
 
 const Index = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('User');
+  const [userSkills, setUserSkills] = useState<string[]>([]);
+
+  // Check user login status
+  useEffect(() => {
+    const userInfo = localStorage.getItem('skillswap_user');
+    if (userInfo) {
+      try {
+        const userData = JSON.parse(userInfo);
+        setIsLoggedIn(true);
+        setUserName(userData.name || 'User');
+        
+        // Extract user skills if available
+        if (userData.skills && Array.isArray(userData.skills)) {
+          setUserSkills(userData.skills);
+        }
+      } catch (e) {
+        console.error('Error parsing user info:', e);
+        setIsLoggedIn(false);
+      }
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, []);
+  
   // Smooth scroll for anchor links
   useEffect(() => {
     const handleAnchorClick = (e: MouseEvent) => {
@@ -43,6 +70,11 @@ const Index = () => {
         <HowItWorks />
       </main>
       <Footer />
+      
+      {/* Only show AI Chatbot for logged-in users */}
+      {isLoggedIn && (
+        <AIChatbot userName={userName} userSkills={userSkills} />
+      )}
     </div>
   );
 };
