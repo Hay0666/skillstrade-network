@@ -17,6 +17,14 @@ import Subscription from "./pages/Subscription";
 import Messages from "./pages/Messages";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
+import Careers from "./pages/Careers";
+import Blog from "./pages/Blog";
+import Contact from "./pages/Contact";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Cookies from "./pages/Cookies";
+import Community from "./pages/Community";
+import Premium from "./pages/Premium";
 import { AnimatePresence } from "framer-motion";
 
 const queryClient = new QueryClient();
@@ -41,6 +49,14 @@ const App = () => (
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/messages/:conversationId" element={<Chat />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/cookies" element={<Cookies />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/premium" element={<Premium />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
