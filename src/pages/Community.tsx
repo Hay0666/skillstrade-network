@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,23 @@ import { Link } from 'react-router-dom';
 import { MessageSquare, Award, Users, Heart } from 'lucide-react';
 
 const Community = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const userInfo = localStorage.getItem('skillswap_user');
+    if (userInfo) {
+      try {
+        setIsLoggedIn(true);
+      } catch (e) {
+        console.error('Error parsing user info:', e);
+        setIsLoggedIn(false);
+      }
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, []);
+
   const successStories = [
     {
       id: 1,
@@ -110,9 +126,11 @@ const Community = () => {
           <p className="max-w-2xl mx-auto mb-6">
             The Skill Swap community is more than just a platform—it's a movement to democratize learning and create meaningful connections through shared knowledge.
           </p>
-          <Button size="lg" asChild>
-            <Link to="/auth?mode=register">Join the Community</Link>
-          </Button>
+          {!isLoggedIn && (
+            <Button size="lg" asChild>
+              <Link to="/auth?mode=register">Join the Community</Link>
+            </Button>
+          )}
         </div>
 
         {/* Community Guidelines */}
@@ -238,12 +256,21 @@ const Community = () => {
             Join thousands of people already sharing knowledge and building meaningful connections through Skill Swap.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" asChild>
-              <Link to="/auth?mode=register">Create Your Profile</Link>
-            </Button>
-            <Button variant="outline" size="lg" asChild>
-              <Link to="/explore">Browse Skills</Link>
-            </Button>
+            {!isLoggedIn && (
+              <>
+                <Button size="lg" asChild>
+                  <Link to="/auth?mode=register">Create Your Profile</Link>
+                </Button>
+                <Button variant="outline" size="lg" asChild>
+                  <Link to="/explore">Browse Skills</Link>
+                </Button>
+              </>
+            )}
+            {isLoggedIn && (
+              <Button variant="outline" size="lg" asChild>
+                <Link to="/explore">Browse Skills</Link>
+              </Button>
+            )}
           </div>
         </div>
       </main>
