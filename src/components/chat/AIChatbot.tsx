@@ -69,19 +69,43 @@ const AIChatbot: React.FC<AIChatbotProps> = ({ userName, userSkills = [] }) => {
     setNewMessage('');
     setIsTyping(true);
     
-    // Generate AI response using rule-based system
-    setTimeout(() => {
-      const aiResponse = findMatchingResponses(newMessage, userSkills);
+    try {
+      // Call external API
+      const response = await fetch('https://wjnbufugizuexnkptgww.supabase.co/functions/v1/ai-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: newMessage
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+      
+      const data = await response.json();
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: aiResponse,
+        content: data.reply || 'Sorry, I couldn\'t generate a response.',
         sender: 'ai',
         timestamp: new Date()
       };
       
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error calling AI API:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: 'Sorry, I\'m having trouble connecting right now. Please try again.',
+        sender: 'ai',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, Math.random() * 1000 + 1000); // Simulate thinking time
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
