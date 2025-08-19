@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, X, Send, ChevronDown, Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { findMatchingResponses } from '@/utils/chatbotUtils';
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: string;
@@ -71,21 +71,13 @@ const AIChatbot: React.FC<AIChatbotProps> = ({ userName, userSkills = [] }) => {
     
     try {
       // Call external API
-      const response = await fetch('https://wjnbufugizuexnkptgww.supabase.co/functions/v1/ai-chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: newMessage
-        })
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: { message: userMessage.content }
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to get AI response');
+      if (error) {
+        throw error;
       }
-      
-      const data = await response.json();
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: data.reply || 'Sorry, I couldn\'t generate a response.',
