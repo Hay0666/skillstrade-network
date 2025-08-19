@@ -1,5 +1,7 @@
 # Skill Exchange Platform
 
+> ⚠️ **Work in Progress:** This project is currently in development. The web app is not complete, and many features and modifications are yet to be added.
+
 ## Overview
 
 This is a Skill Exchange Platform that connects users who want to teach and learn skills from each other. Users are automatically or manually matched based on their skills, learning preferences, and availability. The platform also features an AI chatbot, a messaging system, and paid subscription plans for enhanced functionality.
