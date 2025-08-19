@@ -5,7 +5,7 @@ import Footer from '@/components/layout/Footer';
 import Hero from '@/components/home/Hero';
 import Features from '@/components/home/Features';
 import HowItWorks from '@/components/home/HowItWorks';
-import AIChatbot from '@/components/chat/AIChatbot';
+
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -76,10 +76,6 @@ const Index = () => {
       </main>
       <Footer />
       
-      {/* Only show AI Chatbot for logged-in users */}
-      {isLoggedIn && (
-        <AIChatbot userName={userName} userSkills={userSkills} />
-      )}
     </div>
   );
 };
