@@ -21,10 +21,15 @@ const Index = () => {
         setIsLoggedIn(true);
         setUserName(userData.name || 'User');
         
-        // Extract user skills if available
-        if (userData.skills && Array.isArray(userData.skills)) {
-          setUserSkills(userData.skills);
+        // Extract user skills if available - combine teachSkills and learnSkills
+        const combinedSkills = [];
+        if (userData.teachSkills && Array.isArray(userData.teachSkills)) {
+          combinedSkills.push(...userData.teachSkills);
         }
+        if (userData.learnSkills && Array.isArray(userData.learnSkills)) {
+          combinedSkills.push(...userData.learnSkills);
+        }
+        setUserSkills(combinedSkills);
       } catch (e) {
         console.error('Error parsing user info:', e);
         setIsLoggedIn(false);
