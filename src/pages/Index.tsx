@@ -5,6 +5,7 @@ import Footer from '@/components/layout/Footer';
 import Hero from '@/components/home/Hero';
 import Features from '@/components/home/Features';
 import HowItWorks from '@/components/home/HowItWorks';
+import OpenAIChatInterface from '@/components/chat/OpenAIChatInterface';
 
 
 const Index = () => {
@@ -75,6 +76,9 @@ const Index = () => {
         <HowItWorks />
       </main>
       <Footer />
+      
+      {/* OpenAI Chat Interface */}
+      <OpenAIChatInterface />
       
     </div>
   );
